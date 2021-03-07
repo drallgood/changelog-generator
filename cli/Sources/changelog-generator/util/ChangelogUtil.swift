@@ -35,8 +35,7 @@ class ChangelogUtil {
     
     static func generateMarkdown(changelogs: Dictionary<ChangelogType, [Changelog]>, release:String) -> String {
         
-        //TODO: baseUrl
-        let baseUrl = ""
+        let baseUrl = ChangelogGenerator.config.ticketBaseUrl
         
         var result = "## \(release)\n"
         ChangelogType.allCases.forEach { (type) in
@@ -55,7 +54,7 @@ class ChangelogUtil {
             logs?.forEach({ (log) in
                 result += "- \(log.title)"
                 if(!log.reference.isEmpty) {
-                    result += " ([\(log.reference)](\(baseUrl)\(log.reference)))"
+                    result += " ([\(log.reference)](\(baseUrl ?? "")\(log.reference)))"
                 }
                 result += "\n"
             })

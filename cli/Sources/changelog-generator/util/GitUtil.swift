@@ -1,53 +1,68 @@
 import Foundation
+import Dispatch
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
 
 class GitUtil {
-    static func checkoutGitProject(atUrl url: String, atPath path: String) {
-        let process = Process()
-        try! process.clone(repo: url, path: path)
-        process.waitUntilExit()
-        
+    
+    private var task: Process?
+    
+    func checkoutGitProject(atUrl url: String, atPath path: String) throws {
+        try processInGitShell(["clone",url,path])
         print("Checked out \(url) to \(path)")
     }
     
-    static func createBranch(atPath path: URL, branchName: String) {
-        let process = Process()
-        try! process.createBranch(atPath: path, branchName: branchName)
-        process.waitUntilExit()
+    func createBranch(atPath path: URL, branchName: String) throws {
+        try processInGitShell(atPath: path,["branch", branchName, "master"])
     }
     
-    static func assertOnCorrectBranchAndUpToDate(atPath path: URL, branchName: String) {
-        GitUtil.switchToBranch(atPath: path, branchName: branchName)
-        GitUtil.pull(atPath: path)
+    func assertOnCorrectBranchAndUpToDate(atPath path: URL, branchName: String) throws {
+        try switchToBranch(atPath: path, branchName: branchName)
+        try pull(atPath: path)
     }
     
-    static func switchToBranch(atPath path: URL, branchName: String) {
-        let process = Process()
-        try! process.switchToBranch(atPath: path, branchName: branchName)
-        process.waitUntilExit()
+    func switchToBranch(atPath path: URL, branchName: String) throws {
+        try  processInGitShell(atPath: path,["checkout", branchName])
     }
     
-    static func commitChanges(atPath path: URL, message: String) {
-        let process = Process()
-        try! process.gitAdd(atPath: path, toAdd: ".")
+    func commitChanges(atPath path: URL, message: String) throws {
+        try processInGitShell(atPath: path, ["add", "."])
+        try processInGitShell(atPath: path, ["commit","-m", message])
+    }
+    
+    func pull(atPath path: URL) throws {
+        try processInGitShell(atPath: path,["pull"])
+    }
+    
+    func push(atPath path: URL, branchName: String) throws {
+        try processInGitShell(atPath: path,["push","--set-upstream","origin",branchName])
+    }
+    
+    private func processInGitShell(atPath path:URL? = nil,_ command: [String]) throws {
+        let process = gitShell(atPath: path,command)
+        task = process
         process.waitUntilExit()
         
-        let process2 = Process()
-        try! process2.gitCommit(atPath: path, message: message)
-        process2.waitUntilExit()
+        if(process.terminationStatus > 0) {
+            throw ProcessError.exited(code: task!.terminationStatus)
+        }
+        task = nil
     }
     
-    static func pull(atPath path: URL) {
+    private func gitShell(atPath path:URL? = nil,_ command: [String]) -> Process {
         let process = Process()
-        try! process.gitPull(atPath: path)
-        process.waitUntilExit()
+        print("Executing: \(command)")
+        process.arguments = command
+        if(path != nil) {
+            process.currentDirectoryURL = path
+        }
+        process.launchPath = ChangelogGenerator.config.gitExecutablePath
+        process.launch()
+        return process
     }
     
-    static func push(atPath path: URL, branchName: String) {
-        let process = Process()
-        try! process.gitPush(atPath: path, branchName: branchName)
-        process.waitUntilExit()
+    func terminate() {
+        self.task?.terminate()
     }
 }

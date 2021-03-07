@@ -1,13 +1,15 @@
 import ArgumentParser
 
 /// Here you can specify parameters valid for all sub commands.
-struct Options: ParsableArguments {
-
+struct GlobalOptions: ParsableArguments {
+    
     @Option(name: [.customShort("c"), .long])
-    var configFile: String
-
+    var configFile: String?
+    
     mutating func validate() throws {
         // Misusing validate to set the received flag globally
-        ChangelogGenerator.configFile = configFile
+        if(configFile != nil) {
+            ChangelogGenerator.configFile = configFile!
+        }
     }
 }

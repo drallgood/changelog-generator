@@ -7,7 +7,11 @@
 
 import Foundation
 class GitlabConnector: Connector {
-    private baseUrl: String = "https://gitlab.com"
+    private var baseUrl: String
+    
+    init(baseUrl: String) {
+        self.baseUrl = baseUrl
+    }
     
     func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) {
         guard let projectEncoded = project.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {

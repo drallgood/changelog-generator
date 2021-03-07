@@ -1,0 +1,22 @@
+[
+  {
+    "title": "Custom config file for common parameters",
+    "reference": "",
+    "type": "added"
+  },
+  {
+    "title": "ConnectorType configuration that will allow for different connectors (e.g. gitlab, github, ...)",
+    "reference": "",
+    "type": "added"
+  },
+  {
+    "title": "Generate and GenerateALL commands that generate changlogs for a single/ultiple projects",
+    "reference": "",
+    "type": "added"
+  },
+  {
+    "title": "Fixed issue where process wouldn't terminate when app was terminated",
+    "reference": "",
+    "type": "fixed"
+  },
+]

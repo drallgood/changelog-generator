@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "HIS Changelog Generator",
+    name: "Changelog Generator",
     platforms: [
-        .macOS(.v10_15)
+        .macOS(.v10_15),
     ],
     products: [
-        .executable(name: "his-changelog-generator", targets: ["changelog-generator"])
+        .executable(name: "changelog-generator", targets: ["changelog-generator"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.1")
