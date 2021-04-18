@@ -42,6 +42,9 @@ struct GenerateCommand: ParsableCommand {
             switch ChangelogGenerator.config.gitConnectorType {
             case .Gitlab:
                 connector = GitlabConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
+            case .Github:
+                connector = GithubConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
+            
             }
         }
         

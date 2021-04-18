@@ -1,7 +1,7 @@
 import ArgumentParser
 
 struct GenerateOptions: ParsableArguments {
-    @Argument(help: "The name of the release, e.g. 8.0-IT-32")
+    @Argument(help: "The name of the release, e.g. 8.0.1")
     var release: String
     
     @Flag(name: [.long], help: "Push")
@@ -17,7 +17,7 @@ struct GenerateOptions: ParsableArguments {
     var accessToken: String?
     
     @Option(name: [.customShort("b"), .long], help: "Base branch")
-    var baseBranch: String = "master"
+    var baseBranch: String = "main"
     
     func validate() throws {
         guard !createMR || (createMR && accessToken != nil) else {
