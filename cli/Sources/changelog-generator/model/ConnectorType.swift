@@ -7,6 +7,7 @@
 
 enum ConnectorType: String, Codable, CaseIterable {
     case Gitlab
+    case Github
 }
 
 extension ConnectorType {
@@ -15,6 +16,10 @@ extension ConnectorType {
         switch argument {
         case "Gitlab":
             self = .Gitlab
+            break
+        case "Github":
+            self = .Github
+            break
         default:
             return nil
         }
