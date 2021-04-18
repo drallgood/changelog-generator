@@ -9,4 +9,4 @@ COPY --from=builder /root/.build .
 COPY gitconfig /root/.gitconfig
 COPY known_hosts /root/.ssh/known_hosts
 RUN apt update && apt install -y git
-ENTRYPOINT ["x86_64-unknown-linux-gnu/release/his-changelog-generator"]
+ENTRYPOINT ["x86_64-unknown-linux-gnu/release/changelog-generator"]
