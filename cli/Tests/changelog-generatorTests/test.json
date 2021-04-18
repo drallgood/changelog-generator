@@ -1,0 +1,12 @@
+{
+    "projects": [
+        {
+            "title": "his-hl7",
+            "gitUrl": "git@git.cgm.ag:cgm-gss-g3his-common/his-hl7.git",
+            "localPath": null
+        }, {
+            "title": "hl7-html5",
+            "gitUrl": "https://git.cgm.ag/cgm-gss-g3his-common/hl7-html5.git"
+        }
+    ]
+}

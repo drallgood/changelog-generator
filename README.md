@@ -9,16 +9,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### WHY?
 
 For simple projects, a simple CHANGELOG.md file or even git commit messages are sufficient to document all significant changes.   
-For more complex, multi repository projects, centralized changelogs or release notes are often instituted (e.g in a separate tool or repository)
 
-However, the more complex a project becomes, the less effective these approaches are.
+For more complex, multi repository projects, centralized changelogs or release notes are often instituted (e.g in a separate tool or repository). 
 
+However, the more complex a project becomes, the less effective these approaches are.  
 Here are a few reasons:
 
 - Commit messages are sometimes too detailed (or not detailed enough). Especially when following an approach of frequent commits
-- Single files (like CHANGELOG.md) cause merge conflict if there are multiple people working on the same file.
+- Single files (like `CHANGELOG.md`) cause merge conflicts if there are multiple people working on the same file.
 - Changes in centralized documents (e.g. on Confluence), are often forgotten as they don't reside with the code changes and thus can't be reviewed and merged with the code.
-- Fixes to a previous version (e.g. "bugfix" or "maintenance" releases, often mean adapting multiple documents.
+- Fixes to a previous version (e.g. "bugfix" or "maintenance" releases), often mean adapting multiple documents.
 
 That's where Gitlab's approach is great. Each change is encapsulated in a single (or multiple) files. Changelogs/release notes can be generated out of them
 
@@ -33,7 +33,7 @@ That's where Gitlab's approach is great. Each change is encapsulated in a single
 
 The process can be described in a few simple steps:
 
-1) Developer places his changes in a separate Changelog file in `/changelogs/` on his branch, e.g. `MyTicket-123.json`
+1) Developer places his changes in a separate Changelog file in `/changelogs/` on his branch, e.g. `/changelogs/MyTicket-123.json`
 2) Branch gets merged.
 3) At some point (e.g. during the CI/CD run, daily, per sprint, per release, ...) the Changelog generator summarizes all changes
 

@@ -13,14 +13,13 @@ class GitlabConnector: Connector {
         self.baseUrl = baseUrl
     }
     
-    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) {
+    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) throws {
         guard let projectEncoded = project.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
-            print("Couldn't create project string")
-            return
+            throw ProcessError.URLError(url: project)
         }
-        guard let url = URL(string: "\(baseUrl)/api/v4/projects/\(projectEncoded)/merge_requests") else {
-            print("Couldn't create url")
-            return
+        let urlString = "\(baseUrl)/api/v4/projects/\(projectEncoded)/merge_requests"
+        guard let url = URL(string: urlString) else {
+            throw ProcessError.URLError(url: urlString)
         }
         
         let sem = DispatchSemaphore.init(value: 0)

@@ -7,5 +7,5 @@
 
 import Foundation
 protocol Connector {
-    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String)
+    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) throws
 }

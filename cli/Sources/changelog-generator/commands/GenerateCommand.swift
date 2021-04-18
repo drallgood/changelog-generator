@@ -2,9 +2,7 @@ import ArgumentParser
 import Foundation
 
 struct GenerateCommand: ParsableCommand {
-    init() {
-    }
-    
+   
     public static let configuration = CommandConfiguration(commandName: "generate", abstract: "Generate Changelogs for a project")
     
     @OptionGroup var options: GenerateOptions
@@ -15,6 +13,10 @@ struct GenerateCommand: ParsableCommand {
     @Option(name: [.customShort("l"), .long], help: "Path to local git repo")
     var localPath: String?
     
+    init() {
+    }
+    
+    // Used when calling from another command
     init(options: GenerateOptions, gitUrl: String?, localPath:String?) {
         self.options = options
         self.gitUrl = gitUrl
@@ -69,7 +71,7 @@ struct GenerateCommand: ParsableCommand {
                     print("ERROR: couldn't extract project name from \(project.gitUrl!)")
                     return
                 }
-                connector?.createMR(forProject: projectName, release: options.release,token: options.accessToken!, sourceBranchName: branchName, targetBranchName: options.baseBranch)
+                try connector?.createMR(forProject: projectName, release: options.release,token: options.accessToken!, sourceBranchName: branchName, targetBranchName: options.baseBranch)
             }
             
             if(!options.noDelete) {

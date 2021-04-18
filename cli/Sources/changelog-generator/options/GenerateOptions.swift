@@ -19,7 +19,7 @@ struct GenerateOptions: ParsableArguments {
     @Option(name: [.customShort("b"), .long], help: "Base branch")
     var baseBranch: String = "master"
     
-    mutating func validate() throws {
+    func validate() throws {
         guard !createMR || (createMR && accessToken != nil) else {
             throw ValidationError("Please specify a 'access-token'")
         }

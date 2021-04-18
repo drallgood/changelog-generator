@@ -5,7 +5,7 @@ struct ChangelogGenerator: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A Swift command-line tool to generate changelogs for configured HIS projects",
         subcommands: [GenerateCommand.self, GenerateAllCommand.self])
-
+    
     @OptionGroup var options: GlobalOptions
     
     public static var configFile: String = ("~/.config/changelog-generator.json" as NSString).expandingTildeInPath
@@ -14,12 +14,17 @@ struct ChangelogGenerator: ParsableCommand {
     
     init() {
         let configFile = ChangelogGenerator.configFile
-        guard let localData = Config.readConfigFile(fromPath: configFile)
-        else {
+        do {
+            guard let localData = try Config.readConfigFile(fromPath: configFile)
+            else {
+                return
+            }
+            print("Using \(configFile)")
+            ChangelogGenerator.config = Config.parse(jsonData: localData)
+        } catch(let error) {
+            print(error)
             return
         }
-        print("Using \(configFile)")
-        ChangelogGenerator.config = Config.parse(jsonData: localData)
     }
 }
 

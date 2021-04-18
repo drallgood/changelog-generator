@@ -13,7 +13,7 @@ struct GenerateAllCommand: ParsableCommand {
     func run() throws {
         print("Using \(projectsConfig)")
         
-        if let localData = ProjectsConfig.readProjectsConfigFile(fromPath: projectsConfig) {
+        if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: projectsConfig) {
 
             let projectsConfig = ProjectsConfig.parseProjectsConfig(jsonData: localData)
             try projectsConfig.projects.forEach  { (project) in

@@ -10,19 +10,13 @@ struct ProjectsConfig: Codable {
 }
 
 extension ProjectsConfig {
-    static func readProjectsConfigFile(fromPath path: String) -> Data? {
-        do {
+    static func readProjectsConfigFile(fromPath path: String) throws -> Data? {
             let fileManager = FileManager.default
             if fileManager.fileExists(atPath: path) {
                 return try String(contentsOfFile: path).data(using: .utf8)
             } else {
-                print("File Not found at \(path)")
+                throw ProcessError.NoConfigFound(path: path)
             }
-        } catch {
-            print(error)
-        }
-        
-        return nil
     }
     
     static func parseProjectsConfig(jsonData: Data) -> ProjectsConfig {

@@ -18,19 +18,14 @@ struct Config: Codable {
 
 extension Config {
     static func newInstance() -> Config {
-        return Config(gitUrl: "", gitAccessToken: "", ticketBaseUrl: "")
+        return Config(gitUrl: nil, gitAccessToken: nil, ticketBaseUrl: nil)
     }
     
-    static func readConfigFile(fromPath path: String) -> Data? {
-        do {
-            let fileManager = FileManager.default
-            if fileManager.fileExists(atPath: path) {
-                return try String(contentsOfFile: path).data(using: .utf8)
-            }
-        } catch {
-            print(error)
+    static func readConfigFile(fromPath path: String) throws -> Data? {
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: path) {
+            return try String(contentsOfFile: path).data(using: .utf8)
         }
-        
         return nil
     }
     

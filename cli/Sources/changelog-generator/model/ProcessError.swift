@@ -8,6 +8,9 @@
 import Foundation
 enum ProcessError: Error {
     case exited(code:Int32)
+    case NoConfigFound(path: String)
+    case URLError(url: String)
+    
 }
 
 extension ProcessError: LocalizedError {
@@ -15,6 +18,10 @@ extension ProcessError: LocalizedError {
         switch self {
         case .exited(code: let code):
             return "Process exited with code \(code)"
+        case .NoConfigFound(path: let path):
+            return "No Configuration found at \(path)"
+        case .URLError(let url):
+            return "Error parsing URL: \(url)"
         }
     }
 }
