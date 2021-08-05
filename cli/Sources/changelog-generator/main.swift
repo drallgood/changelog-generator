@@ -12,19 +12,14 @@ struct ChangelogGenerator: ParsableCommand {
     
     public static var config: Config = Config.newInstance()
     
-    init() {
+    func validate() throws {
         let configFile = ChangelogGenerator.configFile
-        do {
-            guard let localData = try Config.readConfigFile(fromPath: configFile)
-            else {
-                return
-            }
-            print("Using \(configFile)")
-            ChangelogGenerator.config = Config.parse(jsonData: localData)
-        } catch(let error) {
-            print(error)
+        guard let localData = try Config.readConfigFile(fromPath: configFile)
+        else {
             return
         }
+        print("Using \(configFile)")
+        ChangelogGenerator.config = Config.parse(jsonData: localData)
     }
 }
 

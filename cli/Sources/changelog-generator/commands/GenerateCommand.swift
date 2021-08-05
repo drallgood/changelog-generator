@@ -2,7 +2,7 @@ import ArgumentParser
 import Foundation
 
 struct GenerateCommand: ParsableCommand {
-   
+    
     public static let configuration = CommandConfiguration(commandName: "generate", abstract: "Generate Changelogs for a project")
     
     @OptionGroup var options: GenerateOptions
@@ -13,20 +13,31 @@ struct GenerateCommand: ParsableCommand {
     @Option(name: [.customShort("l"), .long], help: "Path to local git repo")
     var localPath: String?
     
+    var title: String?
+    
     init() {
     }
     
     // Used when calling from another command
-    init(options: GenerateOptions, gitUrl: String?, localPath:String?) {
+    init(options: GenerateOptions, title: String?, gitUrl: String?, localPath:String?) {
         self.options = options
         self.gitUrl = gitUrl
         self.localPath = localPath
+        self.title = title
     }
     
     
-    func validate() throws {
+    mutating func validate() throws {
         guard (gitUrl != nil || localPath != nil) else {
             throw ValidationError("Please specify either a Git Url or a local path")
+        }
+        
+        if options.accessToken == nil {
+            options.accessToken = ChangelogGenerator.config.gitAccessToken
+        }
+        
+        guard !options.createMR || (options.createMR && options.accessToken != nil) else {
+            throw ValidationError("Please specify a 'access token'")
         }
     }
     
@@ -44,7 +55,7 @@ struct GenerateCommand: ParsableCommand {
                 connector = GitlabConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
             case .Github:
                 connector = GithubConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
-            
+                
             }
         }
         
@@ -63,13 +74,16 @@ struct GenerateCommand: ParsableCommand {
         }
         sigintSrc.resume()
         
-        let project = Project(title: "", gitUrl: gitUrl, localPath: localPath)
+        let project = Project(title: self.title ?? "", gitUrl: gitUrl, localPath: localPath)
         do {
             projectPath = try prepareGit(gitUtil: gitUtil, project: project, branchName: branchName)
-            try generateChangelog(projectPath: projectPath!)
+            guard try generateChangelog(projectPath: projectPath!) else {
+                return
+            }
+            
             try commitChanges(gitUtil: gitUtil, projectPath: projectPath!, branchName: branchName)
             
-            if(options.createMR) {
+            if(options.createMR && !options.dryRun) {
                 guard let projectName = extractProjectName(project.gitUrl!) else {
                     print("ERROR: couldn't extract project name from \(project.gitUrl!)")
                     return
@@ -104,12 +118,12 @@ struct GenerateCommand: ParsableCommand {
         return projectPath
     }
     
-    private func generateChangelog(projectPath: URL) throws {
+    private func generateChangelog(projectPath: URL) throws -> Bool  {
         let changelogsPath = projectPath.appendingPathComponent("changelogs")
         let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogsPath)
         if (changelogsList.count <= 0) {
             print("No changelogs found.")
-            return
+            return false
         }
         
         let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
@@ -120,12 +134,13 @@ struct GenerateCommand: ParsableCommand {
         ChangelogUtil.appendToChangelogFile(filePath: projectPath.appendingPathComponent("CHANGELOG.md"), content: markdownString)
         print("Archiving changelogs for \(options.release)")
         try ChangelogUtil.archiveChangelogs(fromPath: changelogsPath, release: options.release)
+        return true
     }
     
     private func commitChanges(gitUtil: GitUtil, projectPath: URL, branchName: String) throws {
         try gitUtil.commitChanges(atPath: projectPath, message: "Updating changelog for \(options.release)")
         
-        if(options.push) {
+        if(options.push && !options.dryRun) {
             print("Pushing changelogs")
             try gitUtil.push(atPath: projectPath, branchName: branchName)
         }

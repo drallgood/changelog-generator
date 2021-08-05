@@ -52,7 +52,7 @@ class GitUtil {
     
     private func gitShell(atPath path:URL? = nil,_ command: [String]) -> Process {
         let process = Process()
-        print("Executing: \(command)")
+        print("Executing: git \(command)")
         process.arguments = command
         if(path != nil) {
             process.currentDirectoryURL = path

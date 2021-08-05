@@ -6,6 +6,10 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 class GithubConnector: Connector {
     private var baseUrl: String
     

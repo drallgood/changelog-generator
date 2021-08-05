@@ -13,15 +13,12 @@ struct GenerateOptions: ParsableArguments {
     @Flag(name: [.long], help: "Don't delete git project when finished")
     var noDelete: Bool = false
     
+    @Flag(name: [.long], help: "Dry run")
+    var dryRun: Bool = false
+    
     @Option(name: [.customShort("t"), .long], help: "Personal access token (needed for merge request operations)")
     var accessToken: String?
     
     @Option(name: [.customShort("b"), .long], help: "Base branch")
     var baseBranch: String = "main"
-    
-    func validate() throws {
-        guard !createMR || (createMR && accessToken != nil) else {
-            throw ValidationError("Please specify a 'access-token'")
-        }
-    }
 }

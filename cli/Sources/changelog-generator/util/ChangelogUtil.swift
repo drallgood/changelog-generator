@@ -10,9 +10,16 @@ class ChangelogUtil {
                 do {
                     let jsonData = try String(contentsOfFile: fileURL.path).data(using: .utf8)
                     if(jsonData != nil) {
-                        let changelogsArray = try JSONDecoder().decode(Array<Changelog>.self,
-                                                                       from: jsonData!)
-                        let changelogWrapper = ChangelogWrapper(changelogs: changelogsArray, file: fileURL)
+                        var changelogWrapper: ChangelogWrapper
+                        do {
+                            let changelogsArray = try JSONDecoder().decode(Array<Changelog>.self,
+                                                                           from: jsonData!)
+                            changelogWrapper = ChangelogWrapper(changelogs: changelogsArray, file: fileURL)
+                        } catch {
+                            // Maybe a single file
+                            let changelog = try JSONDecoder().decode(Changelog.self, from: jsonData!)
+                            changelogWrapper = ChangelogWrapper(changelogs: [changelog], file: fileURL)
+                        }
                         changelogs.append(changelogWrapper)
                     }
                 } catch {

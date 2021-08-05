@@ -11,14 +11,14 @@ struct GenerateAllCommand: ParsableCommand {
     var projectsConfig: String
     
     func run() throws {
-        print("Using \(projectsConfig)")
+        print("Using projects from \(projectsConfig)")
         
         if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: projectsConfig) {
 
             let projectsConfig = ProjectsConfig.parseProjectsConfig(jsonData: localData)
             try projectsConfig.projects.forEach  { (project) in
             
-                let subcommand: GenerateCommand = GenerateCommand(options: options, gitUrl: project.gitUrl, localPath: project.localPath)
+                var subcommand: GenerateCommand = GenerateCommand(options: options, title: project.title, gitUrl: project.gitUrl, localPath: project.localPath)
                 try subcommand.validate()
                 try subcommand.run()
             }

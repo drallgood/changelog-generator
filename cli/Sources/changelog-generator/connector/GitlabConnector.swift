@@ -6,6 +6,10 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 class GitlabConnector: Connector {
     private var baseUrl: String
     
