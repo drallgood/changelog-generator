@@ -40,7 +40,7 @@ class GitUtil {
     }
     
     private func processInGitShell(atPath path:URL? = nil,_ command: [String]) throws {
-        let process = gitShell(atPath: path,command)
+        let process = try gitShell(atPath: path,command)
         task = process
         process.waitUntilExit()
         
@@ -50,15 +50,15 @@ class GitUtil {
         task = nil
     }
     
-    private func gitShell(atPath path:URL? = nil,_ command: [String]) -> Process {
+    private func gitShell(atPath path:URL? = nil,_ command: [String]) throws -> Process {
         let process = Process()
         print("Executing: git \(command)")
         process.arguments = command
         if(path != nil) {
             process.currentDirectoryURL = path
         }
-        process.launchPath = ChangelogGenerator.config.gitExecutablePath
-        process.launch()
+        process.executableURL = URL(string: ChangelogGenerator.config.gitExecutablePath)
+        try process.run()
         return process
     }
     

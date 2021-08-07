@@ -113,6 +113,6 @@ class ChangelogUtil {
         encoder.outputFormatting = .prettyPrinted
         let data = try! encoder.encode(changelogWrapper.changelogs)
         print("Writing \(changelogWrapper.file)")
-        try data.write(to: changelogWrapper.file, options: [.atomicWrite])
+        try data.write(to: changelogWrapper.file, options: [.atomic])
     }
 }
