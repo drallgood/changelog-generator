@@ -1,5 +1,7 @@
 # Changelog generator
-Generate changelogs (or release notes) in complex, high-frequency projects with ease.
+[![Swift](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml/badge.svg)](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml)
+
+Generate changelogs (or release notes) in complex, high-frequency projects with ease. 
 
 This project was inspired by [Gitlab's way](https://about.gitlab.com/blog/2018/07/03/solving-gitlabs-changelog-conflict-crisis/) of creating Changelogs.
 
@@ -80,4 +82,30 @@ This project provides two ways of generating Changelogs out of the provided file
 TODO
 
 #### CLI
-The CLI is swift based and should run on all systems currently supported by Swift (e.g. Linux, macOS, Windows) 
+The CLI is swift based and should run on all systems currently supported by Swift (e.g. Linux, macOS, Windows)  
+It uses a config file to define some common settings. You can either provide the config file location directly to the cli using the `-c <config-file>` option, or provide a default file by placing it at `~/.config/changelog-generator.json`:
+
+```
+{
+    "gitUrl": "https://gitlab.com",
+    "gitAccessToken": "",
+    "gitExecutablePath": "/usr/bin/git",
+    "gitConnectorType": "Gitlab"
+    "ticketBaseUrl":"https://jira.com/browse/"
+}
+```
+
+The CLI has a help section build in
+```
+USAGE: changelog-generator [--config-file <config-file>] <subcommand>
+
+OPTIONS:
+  -c, --config-file <config-file>
+  -h, --help              Show help information.
+
+SUBCOMMANDS:
+  generate                Generate Changelogs for a project
+  generate-all            Generate Changelogs for all projects
+
+  See 'changelog-generator help <subcommand>' for detailed help.
+ ```
