@@ -35,7 +35,7 @@ jobs:
       with:
           context: .
           push: true
-          tags: drallgood/changelog-generator:latest,drallgood/changelog-generator:${{ GITHUB_SHA }}
+          tags: drallgood/changelog-generator:latest,drallgood/changelog-generator:${{ github.sha }}
     - name: Update repo description
       uses: peter-evans/dockerhub-description@v2
       with:
