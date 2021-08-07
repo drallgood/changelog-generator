@@ -109,3 +109,9 @@ SUBCOMMANDS:
 
   See 'changelog-generator help <subcommand>' for detailed help.
  ```
+ 
+ ### Using docker
+ 
+ To run the cli:
+ `docker run -ti --rm drallgood/changelog-generator:latest`
+
