@@ -104,6 +104,7 @@ OPTIONS:
   -h, --help              Show help information.
 
 SUBCOMMANDS:
+  create                  Create a changelog JSON file
   generate                Generate Changelogs for a project
   generate-all            Generate Changelogs for all projects
 

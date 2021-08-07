@@ -4,7 +4,7 @@ import Foundation
 struct ChangelogGenerator: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A Swift command-line tool to generate changelogs for configured projects",
-        subcommands: [GenerateCommand.self, GenerateAllCommand.self])
+        subcommands: [CreateCommand.self, GenerateCommand.self, GenerateAllCommand.self])
     
     @OptionGroup var options: GlobalOptions
     

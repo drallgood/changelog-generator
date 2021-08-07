@@ -107,4 +107,12 @@ class ChangelogUtil {
         let directoryContents = try FileManager.default.contentsOfDirectory(at: path, includingPropertiesForKeys: nil)
         return directoryContents.filter{ $0.pathExtension == "json" }
     }
+    
+    static func writeChangelogs(changelogWrapper: ChangelogWrapper) throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let data = try! encoder.encode(changelogWrapper.changelogs)
+        print("Writing \(changelogWrapper.file)")
+        try data.write(to: changelogWrapper.file, options: [.atomicWrite])
+    }
 }
