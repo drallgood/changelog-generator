@@ -9,10 +9,13 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: scripts
     steps:
     - uses: actions/checkout@v2
     - name: Build
-      run: cd cli && swift build -v
+      run: swift build -v
     - name: Run tests
       run: swift test -v
     - name: Login to DockerHub
@@ -34,3 +37,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: drallgood/changelog-generator
+          readme-filepath: ../README.md
