@@ -26,7 +26,7 @@ final class changelog_generatorTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         let output = String(data: data, encoding: .utf8)
 
-        XCTAssertEqual(output, "Hello, world!\n")
+        XCTAssertEqual(output, "OVERVIEW: A Swift command-line tool to generate changelogs for configured\nprojects\n\nUSAGE: changelog-generator [--config-file <config-file>] <subcommand>\n\nOPTIONS:\n  -c, --config-file <config-file>\n  -h, --help              Show help information.\n\nSUBCOMMANDS:\n  generate                Generate Changelogs for a project\n  generate-all            Generate Changelogs for all projects\n\n  See \'changelog-generator help <subcommand>\' for detailed help.\n")
     }
 
     /// Returns path to the built products directory.
