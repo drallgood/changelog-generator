@@ -79,7 +79,7 @@ This project provides two ways of generating Changelogs out of the provided file
 	- Generate a sample file based on a template
 
 #### Gradle Task
-TODO
+See `generate.gradle`
 
 #### CLI
 The CLI is swift based and should run on all systems currently supported by Swift (e.g. Linux, macOS, Windows)  
@@ -110,9 +110,22 @@ SUBCOMMANDS:
 
   See 'changelog-generator help <subcommand>' for detailed help.
  ```
- 
- ### Using docker
- 
- To run the cli:
- `docker run -ti --rm drallgood/changelog-generator:latest`
 
+##### Using docker
+ 
+To run the cli:
+```
+docker run -ti --rm drallgood/changelog-generator:latest
+```
+
+For example:
+```
+docker run -ti --rm \
+-v ~/.gitconfig:/root/.gitconfig \
+-v ~/.ssh/known_hosts:/root/.ssh/known_hosts \
+-v ~/.ssh/id_rsa:/root/.ssh/id_rsa \
+-v  ~/.ssh/id_rsa.pub:/root/.ssh/id_rsa.pub \
+-v "$PWD"/projects.json:/projects.json \
+-v ~/.config/changelog-generator:/config.json \
+drallgood/changelog-generator:latest generate-all -p /projects.json -c /config.json 1.0.0 -m --push -b master
+```

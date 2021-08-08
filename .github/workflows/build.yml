@@ -2,9 +2,9 @@ name: Swift
 
 on:
   push:
-    branches: [ main ]
+    branches:  [ main, develop ] 
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -25,9 +25,11 @@ jobs:
       run: swift build -v -c release
     - name: Run tests
       run: swift test -v
+
   publish:
     needs: build
     runs-on: ubuntu-latest
+    if:  ${{ github.ref == 'refs/heads/main' }}
     defaults:
       run:
         working-directory: cli

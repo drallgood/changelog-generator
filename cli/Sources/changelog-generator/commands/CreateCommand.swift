@@ -8,18 +8,27 @@ struct CreateCommand: ParsableCommand {
     @Option(name: [.customShort("p"), .long], help: "Target directory")
     var path: String?
     
-    @Option(name: [.customShort("r"), .long], help: "Reference")
-    var reference: String
+    @Option(name: [.customShort("f"), .long], help: "Filename to create")
+    var fileName: String?
     
-    @Option(name: [.customShort("t"), .long], help: "Title")
+    @Option(name: [.customShort("r"), .long], help: "Reference of the entry, e.g. ticket number")
+    var reference: String?
+    
+    @Option(name: [.customShort("t"), .long], help: "Text describing the change")
     var title: String
     
-    @Option(name: [.customShort("l"), .long], help: "Type: \(ChangelogType.allCasesAsString())")
+    @Option(name: [.customShort("w"), .long], help: "Type of change. One of: \(ChangelogType.allCasesAsString())")
     var type: ChangelogType = .added
+    
+    func validate() throws {
+        guard (fileName != nil || reference != nil) else {
+            throw ValidationError("Please provide either a file name or a reference")
+        }
+    }
     
     func run() throws {
         
-        let changelog = Changelog(title: title, reference: reference, type: type);
+        let changelog = Changelog(title: title, reference: reference ?? "", type: type);
         
         var pathUrl: URL
         if (path == nil) {
@@ -27,7 +36,10 @@ struct CreateCommand: ParsableCommand {
         } else {
             pathUrl = URL(fileURLWithPath: path!)
         }
-        let wrapper = ChangelogWrapper(changelogs: [changelog], file: pathUrl.appendingPathComponent("\(reference).json"))
+        
+        let file = fileName ?? reference!
+        
+        let wrapper = ChangelogWrapper(changelogs: [changelog], file: pathUrl.appendingPathComponent("\(file).json"))
         try ChangelogUtil.writeChangelogs(changelogWrapper: wrapper)
     }
 }
