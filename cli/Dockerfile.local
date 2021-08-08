@@ -1,0 +1,11 @@
+FROM swift:latest as builder
+WORKDIR /root
+COPY . .
+RUN swift package clean && swift build -c release
+
+FROM swift:slim
+WORKDIR /root
+RUN apt update && apt install -y git
+COPY --from=builder /root/.build/release/changelog-generator /usr/local/bin/
+COPY gitconfig /root/.gitconfig
+ENTRYPOINT ["changelog-generator"]
