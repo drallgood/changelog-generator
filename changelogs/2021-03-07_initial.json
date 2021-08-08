@@ -18,5 +18,5 @@
     "title": "Fixed issue where process wouldn't terminate when app was terminated",
     "reference": "",
     "type": "fixed"
-  },
+  }
 ]

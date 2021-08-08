@@ -5,7 +5,7 @@ struct CreateCommand: ParsableCommand {
     
     public static let configuration = CommandConfiguration(commandName: "create", abstract: "Create a changelog JSON file")
     
-    @Option(name: [.customShort("p"), .long], help: "Target directory")
+    @Option(name: [.customShort("p"), .long], help: "Target directory", completion: .directory)
     var path: String?
     
     @Option(name: [.customShort("f"), .long], help: "Filename to create")

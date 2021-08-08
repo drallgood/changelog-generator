@@ -70,7 +70,7 @@ Example:
 ]
 ```
 
-### Tooling
+## Tooling
 This project provides two ways of generating Changelogs out of the provided files:
 - A Gradle task
 - A (Swift based) CLI util that allows you to 
@@ -78,10 +78,10 @@ This project provides two ways of generating Changelogs out of the provided file
 	- Generate changelogs for a set of projects (e.g. for CI)
 	- Generate a sample file based on a template
 
-#### Gradle Task
+### Gradle Task
 See `generate.gradle`
 
-#### CLI
+### CLI
 The CLI is swift based and should run on all systems currently supported by Swift (e.g. Linux, macOS, Windows)  
 It uses a config file to define some common settings. You can either provide the config file location directly to the cli using the `-c <config-file>` option, or provide a default file by placing it at `~/.config/changelog-generator.json`:
 
@@ -95,7 +95,7 @@ It uses a config file to define some common settings. You can either provide the
 }
 ```
 
-The CLI has a help section build in
+The CLI has a help section built-in
 ```
 USAGE: changelog-generator [--config-file <config-file>] <subcommand>
 
@@ -111,7 +111,7 @@ SUBCOMMANDS:
   See 'changelog-generator help <subcommand>' for detailed help.
  ```
 
-##### Using docker
+#### Using docker
  
 To run the cli:
 ```
@@ -128,4 +128,14 @@ docker run -ti --rm \
 -v "$PWD"/projects.json:/projects.json \
 -v ~/.config/changelog-generator:/config.json \
 drallgood/changelog-generator:latest generate-all -p /projects.json -c /config.json 1.0.0 -m --push -b master
+```
+
+#### From source
+
+You need swift to complile this.
+
+Run
+```
+swift build -c release
+ln -s $PWD/.build/release/changelog-generator /usr/local/bin/
 ```
