@@ -132,7 +132,7 @@ drallgood/changelog-generator:latest generate-all -p /projects.json -c /config.j
 
 #### From source
 
-You need swift to complile this.
+You need tohave Swift installed to complile this.
 
 Run
 ```
