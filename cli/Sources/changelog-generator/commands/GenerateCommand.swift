@@ -129,7 +129,9 @@ struct GenerateCommand: ParsableCommand {
         let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
         print("Generating markdown")
         let markdownString = ChangelogUtil.generateMarkdown(changelogs: sortedLogs, release: options.release)
-        print(markdownString)
+        if(ChangelogGenerator.debugEnabled) {
+            print(markdownString)
+        }
         print("Updating CHANGELOG.md")
         ChangelogUtil.appendToChangelogFile(filePath: projectPath.appendingPathComponent("CHANGELOG.md"), content: markdownString)
         print("Archiving changelogs for \(options.release)")

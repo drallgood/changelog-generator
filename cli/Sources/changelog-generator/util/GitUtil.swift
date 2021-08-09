@@ -10,7 +10,10 @@ class GitUtil {
     
     func checkoutGitProject(atUrl url: String, atPath path: String) throws {
         try processInGitShell(["clone",url,path])
-        print("Checked out \(url) to \(path)")
+        if(ChangelogGenerator.debugEnabled) {
+            print("Checked out \(url) to \(path)")
+        }
+        
     }
     
     func createBranch(atPath path: URL, branchName: String) throws {
@@ -52,12 +55,20 @@ class GitUtil {
     
     private func gitShell(atPath path:URL? = nil,_ command: [String]) throws -> Process {
         let process = Process()
-        print("Executing: git \(command)")
+        if(ChangelogGenerator.debugEnabled) {
+            print("Executing: \(ChangelogGenerator.config.gitExecutablePath) \(command)")
+        }
         process.arguments = command
         if(path != nil) {
             process.currentDirectoryURL = path
         }
-        process.executableURL = URL(string: ChangelogGenerator.config.gitExecutablePath)
+        
+        if(!ChangelogGenerator.debugEnabled) {
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            process.standardError = pipe
+        }
+        process.executableURL = URL(string: "file://\(ChangelogGenerator.config.gitExecutablePath)")
         try process.run()
         return process
     }

@@ -6,7 +6,10 @@ class ChangelogUtil {
         do {
             let changelogFiles = try ChangelogUtil.getChangelogFiles(fromPath: path)
             changelogFiles.forEach { (fileURL) in
-                print("Reading \(fileURL.path)")
+                
+                if(ChangelogGenerator.debugEnabled) {
+                    print("Reading \(fileURL.path)")
+                }
                 do {
                     let jsonData = try String(contentsOfFile: fileURL.path).data(using: .utf8)
                     if(jsonData != nil) {
@@ -23,7 +26,7 @@ class ChangelogUtil {
                         changelogs.append(changelogWrapper)
                     }
                 } catch {
-                    print ("Error processing file. \(error.localizedDescription)")
+                    print ("Error processing file \(fileURL): \(error.localizedDescription)")
                 }
             }
         } catch {
