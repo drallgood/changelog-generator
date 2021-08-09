@@ -22,9 +22,9 @@ jobs:
           ${{ runner.os }}-spm-
     - uses: fwal/setup-swift@v1
     - name: Build
-      run: swift build -v -c release
+      run: swift build -c release
     - name: Run tests
-      run: swift test -v
+      run: swift test
 
   publish:
     needs: build
