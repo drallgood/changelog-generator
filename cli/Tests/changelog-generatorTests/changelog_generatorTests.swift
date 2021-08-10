@@ -42,6 +42,6 @@ final class changelog_generatorTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testRun", testRun),
     ]
 }
