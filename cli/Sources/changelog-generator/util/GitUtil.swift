@@ -8,6 +8,41 @@ class GitUtil {
     
     private var task: Process?
     
+    
+    func prepareGit(project: Project, baseBranch: String, branchName: String?) throws -> URL {
+        print("Checking out git project for \(project.title)")
+        
+        var projectPath: URL
+        if(project.localPath == nil) {
+            projectPath = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try self.checkoutGitProject(atUrl: project.gitUrl!, atPath: projectPath.path)
+        } else  {
+            projectPath = URL(fileURLWithPath: project.localPath!)
+        }
+        
+        try self.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: baseBranch)
+        
+        if(branchName != nil) {
+            print("Creating branch \(branchName!)")
+            
+            
+            try self.createBranch(atPath: projectPath, branchName: branchName!)
+            try self.switchToBranch(atPath: projectPath, branchName: branchName!)
+        }
+        return projectPath
+    }
+    
+    func commitChanges(gitUtil: GitUtil, projectPath: URL, branchName: String, message: String, push: Bool, dryRun: Bool = false) throws {
+        try gitUtil.commitChanges(atPath: projectPath, message: message)
+        
+        if(push && !dryRun) {
+            print("Pushing changelogs")
+            try gitUtil.push(atPath: projectPath, branchName: branchName)
+        }
+    }
+    
+    //MARK: Git suboperations
+    
     func checkoutGitProject(atUrl url: String, atPath path: String) throws {
         try processInGitShell(["clone",url,path])
         if(ChangelogGenerator.debugEnabled) {
@@ -72,6 +107,30 @@ class GitUtil {
         try process.run()
         return process
     }
+    
+    func extractProjectName(_ gitUrl: String) -> String? {
+        let sanitizedUrl = gitUrl.replacingOccurrences(of: ".git", with: "")
+        if(sanitizedUrl.starts(with: "http")) {
+            
+            guard let url = URL(string: sanitizedUrl) else {
+                return nil
+            }
+            let pathComponents = url.pathComponents
+            let numOfComponents = pathComponents.count
+            if (numOfComponents >= 2) {
+                return "\(pathComponents[numOfComponents-2])/\(pathComponents[numOfComponents-1])"
+            }
+        } else {
+            let pathComponents = sanitizedUrl.split(separator: ":")
+            let numOfComponents = pathComponents.count
+            if (numOfComponents >= 2) {
+                return "\(pathComponents[numOfComponents-1])"
+            }
+        }
+        return nil
+    }
+    
+    
     
     func terminate() {
         self.task?.terminate()

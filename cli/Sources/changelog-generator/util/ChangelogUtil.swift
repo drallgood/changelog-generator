@@ -118,4 +118,17 @@ class ChangelogUtil {
         print("Writing \(changelogWrapper.file)")
         try data.write(to: changelogWrapper.file, options: [.atomic])
     }
+    
+    static func deleteArchive(fromPath path: URL) throws {
+        let archiveDir = path.appendingPathComponent("archive")
+        let directoryContents = try FileManager.default.contentsOfDirectory(at: archiveDir, includingPropertiesForKeys: nil)
+        try directoryContents.forEach { (file) in
+            if(ChangelogGenerator.debugEnabled) {
+                print("Deleting \(file.path)")
+            }
+            try FileManager.default.removeItem(atPath: file.path)
+        }
+        
+        
+    }
 }

@@ -11,13 +11,14 @@ import FoundationNetworking
 #endif
 
 class GitlabConnector: Connector {
+    
     private var baseUrl: String
     
     init(baseUrl: String) {
         self.baseUrl = baseUrl
     }
     
-    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) throws {
+    func createMR(forProject project: String, title: String, body: String, token: String, sourceBranchName: String, targetBranchName: String) throws {
         guard let projectEncoded = project.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {
             throw ProcessError.URLError(url: project)
         }
@@ -36,8 +37,8 @@ class GitlabConnector: Connector {
         let json = [
             "source_branch":sourceBranchName,
             "target_branch":targetBranchName,
-            "title":"Merge changelog for \(release) to \(targetBranchName)",
-            "description":"Generated changelog for \(release). Branch \(sourceBranchName) to \(targetBranchName)",
+            "title":title,
+            "description":body,
             "remove_source_branch": "true"
         ]
         do {

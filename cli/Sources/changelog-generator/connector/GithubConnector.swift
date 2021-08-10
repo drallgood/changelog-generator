@@ -17,7 +17,7 @@ class GithubConnector: Connector {
         self.baseUrl = baseUrl
     }
     
-    func createMR(forProject project: String, release: String, token: String, sourceBranchName: String, targetBranchName: String) throws {
+    func createMR(forProject project: String, title: String, body: String, token: String, sourceBranchName: String, targetBranchName: String) throws {
 
         let urlString = "\(baseUrl)/repos/\(project)/pulls"
         guard let url = URL(string: urlString) else {
@@ -35,8 +35,8 @@ class GithubConnector: Connector {
         let json = [
             "head":sourceBranchName,
             "base":targetBranchName,
-            "title":"Merge changelog for \(release) to \(targetBranchName)",
-            "body":"Generated changelog for \(release). Branch \(sourceBranchName) to \(targetBranchName)",
+            "title": title,
+            "body": body,
         ]
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: json, options: [])

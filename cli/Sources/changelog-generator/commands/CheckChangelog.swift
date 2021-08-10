@@ -5,42 +5,26 @@ struct CheckChangelogCommand: ParsableCommand {
     
     public static let configuration = CommandConfiguration(commandName: "check", abstract: "Check changelogs for a (set of) project(s)")
     
-    @Option(name: [.customShort("g"), .long], help: "Git Url")
-    var gitUrl: String?
-    
-    @Option(name: [.customShort("l"), .long], help: "Path to local git repo")
-    var localPath: String?
-    
-    @Option(name: [.customShort("p"), .long], help: "Path to projects file")
-    var projectsConfig: String?
-    
-    @Option(name: [.customShort("b"), .long], help: "Base branch")
-    var baseBranch: String = "main"
-    
-    func validate() throws {
-        guard (!(projectsConfig == nil && gitUrl == nil && localPath == nil)) else {
-            throw ValidationError("Please specify either a Git Url, a local path or a projects file")
-        }
-    }
+    @OptionGroup var options: ProjectOptions
     
     func run() throws {
-        if(projectsConfig != nil) {
-            print("Using projects from \(projectsConfig!)")
+        if(options.projectsConfig != nil) {
+            print("Using projects from \(options.projectsConfig!)")
             
-            if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: projectsConfig!) {
+            if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: options.projectsConfig!) {
                 
                 let projectsConfig = ProjectsConfig.parseProjectsConfig(jsonData: localData)
                 projectsConfig.projects.forEach  { (project) in
-                    checkChangelog(project: project)
+                    checkChangelogForProject(project: project)
                 }
             }
         } else {
-            let project = Project(title: "some project", gitUrl: self.gitUrl, localPath: self.localPath)
-            checkChangelog(project: project)
+            let project = Project(title: "some project", gitUrl: options.gitProjectOptions.gitUrl, localPath: options.gitProjectOptions.localPath)
+            checkChangelogForProject(project: project)
         }
     }
     
-    private func checkChangelog(project: Project) {
+    private func checkChangelogForProject(project: Project) {
         let gitUtil = GitUtil()
         
         var projectPath: URL?
@@ -50,7 +34,7 @@ struct CheckChangelogCommand: ParsableCommand {
         let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         sigintSrc.setEventHandler {
             gitUtil.terminate()
-            if(projectPath != nil && self.localPath == nil) {
+            if(projectPath != nil && !options.gitProjectOptions.noDelete) {
                 do {
                     try fileManager.removeItem(at: projectPath!)
                 } catch {
@@ -64,11 +48,11 @@ struct CheckChangelogCommand: ParsableCommand {
         
         do {
             projectPath = try prepareGit(gitUtil: gitUtil, project: project)
-            guard try checkChangelog(projectPath: projectPath!) else {
+            guard try checkChangelogAtURL(projectPath: projectPath!) else {
                 return
             }
         
-            if(self.localPath == nil) {
+            if(!options.gitProjectOptions.noDelete) {
                 try fileManager.removeItem(at: projectPath!)
             }
         } catch {
@@ -87,11 +71,11 @@ struct CheckChangelogCommand: ParsableCommand {
             projectPath = URL(fileURLWithPath: project.localPath!)
         }
         
-        try gitUtil.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: self.baseBranch)
+        try gitUtil.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: options.gitProjectOptions.baseBranch)
         return projectPath
     }
     
-    private func checkChangelog(projectPath: URL) throws -> Bool  {
+    private func checkChangelogAtURL(projectPath: URL) throws -> Bool  {
         let changelogsPath = projectPath.appendingPathComponent("changelogs")
         let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogsPath)
         if (changelogsList.count <= 0) {

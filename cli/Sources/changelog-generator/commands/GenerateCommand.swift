@@ -7,11 +7,7 @@ struct GenerateCommand: ParsableCommand {
     
     @OptionGroup var options: GenerateOptions
     
-    @Option(name: [.customShort("g"), .long], help: "Git Url")
-    var gitUrl: String?
-    
-    @Option(name: [.customShort("l"), .long], help: "Path to local git repo")
-    var localPath: String?
+    @OptionGroup var gitProjectOptions: GitProjectOptions
     
     var title: String?
     
@@ -21,23 +17,16 @@ struct GenerateCommand: ParsableCommand {
     // Used when calling from another command
     init(options: GenerateOptions, title: String?, gitUrl: String?, localPath:String?) {
         self.options = options
-        self.gitUrl = gitUrl
-        self.localPath = localPath
+        gitProjectOptions.gitUrl = gitUrl
+        gitProjectOptions.localPath = localPath
+        gitProjectOptions.baseBranch = options.baseBranch
         self.title = title
     }
     
     
     mutating func validate() throws {
-        guard (gitUrl != nil || localPath != nil) else {
+        guard (gitProjectOptions.gitUrl != nil || gitProjectOptions.localPath != nil) else {
             throw ValidationError("Please specify either a Git Url or a local path")
-        }
-        
-        if options.accessToken == nil {
-            options.accessToken = ChangelogGenerator.config.gitAccessToken
-        }
-        
-        guard !options.createMR || (options.createMR && options.accessToken != nil) else {
-            throw ValidationError("Please specify a 'access token'")
         }
     }
     
@@ -49,21 +38,15 @@ struct GenerateCommand: ParsableCommand {
         var projectPath: URL?
         
         var connector:Connector?
-        if(options.createMR) {
-            switch ChangelogGenerator.config.gitConnectorType {
-            case .Gitlab:
-                connector = GitlabConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
-            case .Github:
-                connector = GithubConnector(baseUrl: ChangelogGenerator.config.gitUrl!)
-                
-            }
+        if(options.gitServerOptions.createMR) {
+            connector = ConnectorUtil.getConnector()
         }
         
         signal(SIGINT, SIG_IGN) // // Make sure the signal does not terminate the application.
         let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         sigintSrc.setEventHandler {
             gitUtil.terminate()
-            if(!options.noDelete && projectPath != nil) {
+            if(!gitProjectOptions.noDelete && projectPath != nil) {
                 do {
                     try fileManager.removeItem(at: projectPath!)
                 } catch {
@@ -74,24 +57,24 @@ struct GenerateCommand: ParsableCommand {
         }
         sigintSrc.resume()
         
-        let project = Project(title: self.title ?? "", gitUrl: gitUrl, localPath: localPath)
+        let project = Project(title: self.title ?? "", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
         do {
-            projectPath = try prepareGit(gitUtil: gitUtil, project: project, branchName: branchName)
+            projectPath = try gitUtil.prepareGit(project: project, baseBranch:gitProjectOptions.baseBranch, branchName: branchName)
             guard try generateChangelog(projectPath: projectPath!) else {
                 return
             }
             
-            try commitChanges(gitUtil: gitUtil, projectPath: projectPath!, branchName: branchName)
+            try gitUtil.commitChanges(gitUtil: gitUtil, projectPath: projectPath!, branchName: branchName, message: "Updating changelog for \(options.release)", push: options.gitServerOptions.push, dryRun: options.dryRun)
             
-            if(options.createMR && !options.dryRun) {
-                guard let projectName = extractProjectName(project.gitUrl!) else {
+            if(options.gitServerOptions.createMR && !options.dryRun) {
+                guard let projectName = gitUtil.extractProjectName(project.gitUrl!) else {
                     print("ERROR: couldn't extract project name from \(project.gitUrl!)")
                     return
                 }
-                try connector?.createMR(forProject: projectName, release: options.release,token: options.accessToken!, sourceBranchName: branchName, targetBranchName: options.baseBranch)
+                try connector?.createMR(forProject: projectName, title: "Merge changelog for \(options.release) to \(gitProjectOptions.baseBranch)", body: "Generated changelog for \(options.release). Branch \(branchName) to \(gitProjectOptions.baseBranch)",token: options.gitServerOptions.accessToken!, sourceBranchName: branchName, targetBranchName: gitProjectOptions.baseBranch)
             }
             
-            if(!options.noDelete) {
+            if(!gitProjectOptions.noDelete) {
                 try fileManager.removeItem(at: projectPath!)
             }
         } catch {
@@ -99,24 +82,7 @@ struct GenerateCommand: ParsableCommand {
         }
     }
     
-    private func prepareGit(gitUtil: GitUtil, project: Project, branchName: String) throws -> URL {
-        print("Checking out git project for \(project.title)")
-        
-        var projectPath: URL
-        if(project.localPath == nil) {
-            projectPath = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try gitUtil.checkoutGitProject(atUrl: project.gitUrl!, atPath: projectPath.path)
-        } else  {
-            projectPath = URL(fileURLWithPath: project.localPath!)
-        }
-        
-        print("Creating branch for \(options.release)")
-        
-        try gitUtil.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: options.baseBranch)
-        try gitUtil.createBranch(atPath: projectPath, branchName: branchName)
-        try gitUtil.switchToBranch(atPath: projectPath, branchName: branchName)
-        return projectPath
-    }
+    
     
     private func generateChangelog(projectPath: URL) throws -> Bool  {
         let changelogsPath = projectPath.appendingPathComponent("changelogs")
@@ -137,36 +103,5 @@ struct GenerateCommand: ParsableCommand {
         print("Archiving changelogs for \(options.release)")
         try ChangelogUtil.archiveChangelogs(fromPath: changelogsPath, release: options.release)
         return true
-    }
-    
-    private func commitChanges(gitUtil: GitUtil, projectPath: URL, branchName: String) throws {
-        try gitUtil.commitChanges(atPath: projectPath, message: "Updating changelog for \(options.release)")
-        
-        if(options.push && !options.dryRun) {
-            print("Pushing changelogs")
-            try gitUtil.push(atPath: projectPath, branchName: branchName)
-        }
-    }
-    
-    private func extractProjectName(_ gitUrl: String) -> String? {
-        let sanitizedUrl = gitUrl.replacingOccurrences(of: ".git", with: "")
-        if(sanitizedUrl.starts(with: "http")) {
-            
-            guard let url = URL(string: sanitizedUrl) else {
-                return nil
-            }
-            let pathComponents = url.pathComponents
-            let numOfComponents = pathComponents.count
-            if (numOfComponents >= 2) {
-                return "\(pathComponents[numOfComponents-2])/\(pathComponents[numOfComponents-1])"
-            }
-        } else {
-            let pathComponents = sanitizedUrl.split(separator: ":")
-            let numOfComponents = pathComponents.count
-            if (numOfComponents >= 2) {
-                return "\(pathComponents[numOfComponents-1])"
-            }
-        }
-        return nil
     }
 }
