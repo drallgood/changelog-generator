@@ -24,9 +24,9 @@ final class changelog_generatorTests: XCTestCase {
         process.waitUntilExit()
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: data, encoding: .utf8)
-
-        XCTAssertEqual(output, "Using /Users/patricecgm/.config/changelog-generator.json\nOVERVIEW: A Swift command-line tool to generate changelogs for configured\nprojects\n\nUSAGE: changelog-generator [--config-file <config-file>] [--debug] <subcommand>\n\nOPTIONS:\n  -c, --config-file <config-file>\n  --debug                 Enable debug logging \n  -h, --help              Show help information.\n\nSUBCOMMANDS:\n  create                  Create a changelog JSON file\n  check                   Check changelogs for a (set of) project(s)\n  generate                Generate Changelogs for a project\n  generate-all            Generate Changelogs for all projects\n  clear                   Clear changelogs for a (set of) project(s), e.g. to\n                          set up for a new version\n\n  See \'changelog-generator help <subcommand>\' for detailed help.\n")
+        var  output = String(data: data, encoding: .utf8)
+        output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
+        XCTAssertEqual(output, "OVERVIEW: A Swift command-line tool to generate changelogs for configured\nprojects\n\nUSAGE: changelog-generator [--config-file <config-file>] [--debug] <subcommand>\n\nOPTIONS:\n  -c, --config-file <config-file>\n  --debug                 Enable debug logging \n  -h, --help              Show help information.\n\nSUBCOMMANDS:\n  create                  Create a changelog JSON file\n  check                   Check changelogs for a (set of) project(s)\n  generate                Generate Changelogs for a project\n  generate-all            Generate Changelogs for all projects\n  clear                   Clear changelogs for a (set of) project(s), e.g. to\n                          set up for a new version\n\n  See \'changelog-generator help <subcommand>\' for detailed help.\n")
     }
 
     /// Returns path to the built products directory.

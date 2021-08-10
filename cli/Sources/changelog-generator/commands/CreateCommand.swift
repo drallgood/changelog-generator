@@ -32,7 +32,7 @@ struct CreateCommand: ParsableCommand {
         
         var pathUrl: URL
         if (path == nil) {
-            pathUrl = URL(fileURLWithPath:FileManager.default.currentDirectoryPath)
+            pathUrl = URL(fileURLWithPath:FileManager.default.currentDirectoryPath).appendingPathComponent("changelogs")
         } else {
             pathUrl = URL(fileURLWithPath: path!)
         }
