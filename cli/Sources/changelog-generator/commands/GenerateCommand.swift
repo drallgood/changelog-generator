@@ -17,10 +17,20 @@ struct GenerateCommand: ParsableCommand {
     // Used when calling from another command
     init(options: GenerateOptions, title: String?, gitUrl: String?, localPath:String?) {
         self.options = options
-        gitProjectOptions.gitUrl = gitUrl
-        gitProjectOptions.localPath = localPath
-        gitProjectOptions.baseBranch = options.baseBranch
+        self.gitProjectOptions = setupGitProjectOptions(gitUrl: gitUrl, localPath: localPath)
+        self.gitProjectOptions.baseBranch = options.baseBranch
         self.title = title
+    }
+    
+    private func setupGitProjectOptions(gitUrl: String?, localPath:String?) -> GitProjectOptions  {
+        var projectOptions:[String] = []
+        if(gitUrl != nil) {
+            projectOptions.append(contentsOf: ["-g",gitUrl!])
+        }
+        if(localPath != nil) {
+            projectOptions.append(contentsOf: ["-l",localPath!])
+        }
+        return GitProjectOptions.parseOrExit(projectOptions)
     }
     
     
