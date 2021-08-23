@@ -8,8 +8,8 @@ plugins {
     id 'java'
 }
 
-group 'net.brendamour'
-version '1.0-SNAPSHOT'
+group = property("pluginGroup")
+version = property("pluginVersion")
 
 repositories {
     mavenCentral()
@@ -24,11 +24,31 @@ apply plugin: 'org.jetbrains.changelog'
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = '2021.2'
+    pluginName = property("pluginName")
+    version = property("platformVersion")
+    type = property("platformType")
+    downloadSources = property("platformDownloadSources") as Boolean
+    updateSinceUntilBuild = true
+
+    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    //    plugins = property("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty)
 }
 tasks {
     patchPluginXml {
-        changeNotes = provider(){ changelog.getUnreleased().toHTML() }
+        changeNotes = provider() { changelog.getUnreleased().toHTML() }
+    }
+
+    runPluginVerifier {
+        ideVersions = Arrays.asList((findProperty("pluginVerifierIdeVersions") as String ).split(','))
+    }
+
+    publishPlugin {
+        dependsOn "patchChangelog"
+        token = System.getenv("PUBLISH_TOKEN")
+        // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+//        channels = listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
 }
 
