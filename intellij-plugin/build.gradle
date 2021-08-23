@@ -1,5 +1,10 @@
+import org.jetbrains.changelog.ExtensionsKt
+
+import java.text.SimpleDateFormat
+
 plugins {
     id 'org.jetbrains.intellij' version '1.1.4'
+    id 'org.jetbrains.changelog' version '1.2.1'
     id 'java'
 }
 
@@ -11,29 +16,43 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
+
+apply plugin: 'org.jetbrains.changelog'
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     version = '2021.2'
 }
-patchPluginXml {
-    changeNotes = """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+tasks {
+    patchPluginXml {
+        changeNotes = provider(){ changelog.getUnreleased().toHTML() }
+    }
 }
+
+changelog {
+    version = "1.0-SNAPSHOT"
+    path = "${project.projectDir}/../CHANGELOG.md"
+    header = "[${-> version.get()}] - ${new SimpleDateFormat("yyyy-MM-dd").format(new Date())}"
+    headerParserRegex = ~/\d+\.\d+/
+    itemPrefix = "-"
+    keepUnreleasedSection = true
+    unreleasedTerm = "[Unreleased]"
+    groups = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]
+}
+
 test {
     useJUnitPlatform()
 }
 
-signPlugin {
-    certificateChain = System.getenv("CERTIFICATE_CHAIN")
-    privateKey = System.getenv("PRIVATE_KEY")
-    password = System.getenv("PRIVATE_KEY_PASSWORD")
-}
-
-publishPlugin {
-    token = System.getenv("PUBLISH_TOKEN")
-}
+//signPlugin {
+//    certificateChain = System.getenv("CERTIFICATE_CHAIN")
+//    privateKey = System.getenv("PRIVATE_KEY")
+//    password = System.getenv("PRIVATE_KEY_PASSWORD")
+//}
+//
+//publishPlugin {
+//    token = System.getenv("PUBLISH_TOKEN")
+//}
