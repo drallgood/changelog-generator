@@ -54,7 +54,7 @@ tasks {
 
 changelog {
     version = "1.0-SNAPSHOT"
-    path = "${project.projectDir}/../CHANGELOG.md"
+    path = "${project.projectDir}/CHANGELOG.md"
     header = "[${-> version.get()}] - ${new SimpleDateFormat("yyyy-MM-dd").format(new Date())}"
     headerParserRegex = ~/\d+\.\d+/
     itemPrefix = "-"
