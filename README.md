@@ -1,5 +1,6 @@
 # Changelog generator
-[![Swift](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml/badge.svg)](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml)
+[![CLI](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml/badge.svg)](https://github.com/drallgood/changelog-generator/actions/workflows/build.yml)
+[![IntelliJ Plugin](https://github.com/drallgood/changelog-generator/actions/workflows/intellij_build.yml/badge.svg)](https://github.com/drallgood/changelog-generator/actions/workflows/intellij_build.yml)
 
 Generate changelogs (or release notes) in complex, high-frequency projects with ease. 
 
@@ -77,6 +78,8 @@ This project provides two ways of generating Changelogs out of the provided file
 	- Generate a changelog for a project
 	- Generate changelogs for a set of projects (e.g. for CI)
 	- Generate a sample file based on a template
+- A IntelliJ Plugin that allows you to
+        - Create Changelog files 
 
 ### Gradle Task
 See `generate.gradle` (TBD)
