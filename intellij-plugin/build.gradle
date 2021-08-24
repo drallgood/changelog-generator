@@ -35,7 +35,7 @@ intellij {
 }
 tasks {
     patchPluginXml {
-        changeNotes = provider() { changelog.getUnreleased().toHTML() }
+        changeNotes = provider() { changelog.getLatest().toHTML() }
         sinceBuild = findProperty("pluginSinceBuild")
         untilBuild = findProperty("pluginUntilBuild")
     }
