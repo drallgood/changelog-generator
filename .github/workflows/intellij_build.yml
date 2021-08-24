@@ -24,7 +24,7 @@ on:
   pull_request:
     paths:
       - intellij-plugin/**
-   workflow_dispatch:
+  workflow_dispatch:
 
 defaults:
   run:
