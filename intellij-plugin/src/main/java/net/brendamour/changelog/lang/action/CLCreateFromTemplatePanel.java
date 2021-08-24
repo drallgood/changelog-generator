@@ -163,7 +163,8 @@ public class CLCreateFromTemplatePanel {
                     }
                 }
             } else if (field instanceof JComboBox) {
-                JComboBox<String> comboBox = (JComboBox) field;
+                @SuppressWarnings("unchecked")
+                JComboBox<String> comboBox = (JComboBox<String>) field;
                 if (myAttributesDefaults != null) {
                     final String defaultValue = myAttributesDefaults.getDefaultValueFor(attribute);
                     if (defaultValue != null) {
@@ -193,7 +194,8 @@ public class CLCreateFromTemplatePanel {
             return null;
         }
     }
-
+    
+    @SuppressWarnings("unchecked")
     public Properties getProperties(Properties predefinedProperties) {
         Properties result = (Properties) predefinedProperties.clone();
         for (Pair<String, JComponent> pair : myAttributes) {
