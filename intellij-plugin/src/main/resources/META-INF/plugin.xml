@@ -1,0 +1,25 @@
+<idea-plugin>
+    <id>net.brendamour.changelog-generator-intellij</id>
+    <name>Changelog Generator</name>
+    <vendor email="support@brendamour.net" url="http://brendamour.net">Patrice Brend'amour</vendor>
+
+    <description><![CDATA[
+    IntelliJ Plugin that allows to generate Changelog files
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+    <actions>
+        <action
+                id="Changelog.NewChangelogFile"
+                class="net.brendamour.changelog.lang.action.NewChangelogFile">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
+        </action>
+    </actions>
+
+</idea-plugin>

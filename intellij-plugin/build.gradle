@@ -1,0 +1,81 @@
+import org.jetbrains.changelog.ExtensionsKt
+
+import java.text.SimpleDateFormat
+
+plugins {
+    id 'org.jetbrains.intellij' version '1.1.4'
+    id 'org.jetbrains.changelog' version '1.2.1'
+    id 'java'
+}
+
+group = property("pluginGroup")
+version = property("pluginVersion")
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+}
+
+apply plugin: 'org.jetbrains.changelog'
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    pluginName = property("pluginName")
+    version = property("platformVersion")
+    type = property("platformType")
+    downloadSources = property("platformDownloadSources") as Boolean
+    updateSinceUntilBuild = true
+
+    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    //    plugins = property("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty)
+}
+tasks {
+    patchPluginXml {
+        changeNotes = provider() { changelog.getLatest().toHTML() }
+        sinceBuild = findProperty("pluginSinceBuild")
+        untilBuild = findProperty("pluginUntilBuild")
+    }
+
+    runPluginVerifier {
+        ideVersions = Arrays.asList((findProperty("pluginVerifierIdeVersions") as String).split(','))
+    }
+
+    publishPlugin {
+        dependsOn "patchChangelog"
+        token = System.getenv("PUBLISH_TOKEN")
+        // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+        var channel = findProperty("pluginChannel") as String
+        channels = Arrays.asList(channel != null ? channel : "default")
+    }
+}
+
+changelog {
+    version = "1.0-SNAPSHOT"
+    path = "${project.projectDir}/CHANGELOG.md"
+    header = "[${-> version.get()}] - ${new SimpleDateFormat("yyyy-MM-dd").format(new Date())}"
+    headerParserRegex = ~/\d+\.\d+/
+    itemPrefix = "-"
+    keepUnreleasedSection = true
+    unreleasedTerm = "[Unreleased]"
+    groups = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]
+}
+
+test {
+    useJUnitPlatform()
+}
+
+//signPlugin {
+//    certificateChain = System.getenv("CERTIFICATE_CHAIN")
+//    privateKey = System.getenv("PRIVATE_KEY")
+//    password = System.getenv("PRIVATE_KEY_PASSWORD")
+//}
+//
+//publishPlugin {
+//    token = System.getenv("PUBLISH_TOKEN")
+//}

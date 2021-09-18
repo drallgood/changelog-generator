@@ -3,8 +3,12 @@ name: Swift
 on:
   push:
     branches:  [ main, develop ] 
+    paths:
+      - cli/**
   pull_request:
     branches: [ main, develop ]
+    paths:
+      - cli/**
 
 jobs:
   build:
@@ -17,9 +21,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: "**/.build"
-        key: ${{ runner.os }}-spm-${{ github.workspace }}-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
-            ${{ runner.os }}-spm-${{ github.workspace }}
+            ${{ runner.os }}-spm-
     - uses: fwal/setup-swift@v1
     - name: Build
       run: swift build -c release
@@ -38,9 +42,9 @@ jobs:
     - uses: actions/cache@v2
       with:
         path:  "**/.build"
-        key: ${{ runner.os }}-spm-${{ github.workspace }}-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
-            ${{ runner.os }}-spm-${{ github.workspace }}
+            ${{ runner.os }}-spm-
     - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
