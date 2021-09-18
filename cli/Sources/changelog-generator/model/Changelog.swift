@@ -50,6 +50,12 @@ extension ChangelogType {
         }
     }
     
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let type = try? container.decode(String.self)
+        self.init(argument: type!)!
+    }
+    
     static func allCasesAsString() -> String {
         return ChangelogType.allCases.map({ "\($0)" })
             .joined(separator: ", ")

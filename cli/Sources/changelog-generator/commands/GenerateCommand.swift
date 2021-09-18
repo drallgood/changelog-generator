@@ -67,7 +67,7 @@ struct GenerateCommand: ParsableCommand {
         }
         sigintSrc.resume()
         
-        let project = Project(title: self.title ?? "", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
+        let project = Project(title: self.title ?? "project", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
         do {
             projectPath = try gitUtil.prepareGit(project: project, baseBranch:gitProjectOptions.baseBranch, branchName: branchName)
             guard try generateChangelog(projectPath: projectPath!) else {
