@@ -32,6 +32,19 @@ extension ChangelogType {
             self = .added
         case "other":
             self = .other
+        // Some common mistakes
+        case "remove":
+            self = .removed
+        case "fix":
+            self = .fixed
+        case "fixing":
+            self = .fixed
+        case "add":
+            self = .added
+        case "adding":
+            self = .added
+        case "change":
+            self = .changed
         default:
             return nil
         }
