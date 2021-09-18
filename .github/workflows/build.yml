@@ -27,7 +27,7 @@ jobs:
     - name: Build
       run: swift build -c release
     - name: Run tests
-      run: swift test
+      run: swift test -c release
 
   publish:
     needs: build
