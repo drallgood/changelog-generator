@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Descriptive text describing what was added",
+    "reference": "TICKET-XXXXXX",
+    "type": "added"
+  },
+  {
+    "title": "Fixed some flaw that would have broken everything when someone called Beetlejuice three times.",
+    "reference": "TICKET-XXXXXX",
+    "type": "fix"
+  },
+]

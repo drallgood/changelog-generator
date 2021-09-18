@@ -68,7 +68,7 @@ struct CheckChangelogCommand: ParsableCommand {
             projectPath = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
             try gitUtil.checkoutGitProject(atUrl: project.gitUrl!, atPath: projectPath.path)
         } else  {
-            projectPath = URL(fileURLWithPath: project.localPath!)
+            projectPath = URL(fileURLWithPath: project.localPath!, isDirectory: true)
         }
         
         try gitUtil.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: options.gitProjectOptions.baseBranch)

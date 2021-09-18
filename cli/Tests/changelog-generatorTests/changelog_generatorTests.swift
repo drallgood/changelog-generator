@@ -28,6 +28,38 @@ final class changelog_generatorTests: XCTestCase {
         output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
         XCTAssertEqual(output, "OVERVIEW: A Swift command-line tool to generate changelogs for configured\nprojects\n\nUSAGE: changelog-generator [--config-file <config-file>] [--debug] <subcommand>\n\nOPTIONS:\n  -c, --config-file <config-file>\n  --debug                 Enable debug logging \n  -h, --help              Show help information.\n\nSUBCOMMANDS:\n  create                  Create a changelog JSON file\n  check                   Check changelogs for a (set of) project(s)\n  generate                Generate Changelogs for a project\n  generate-all            Generate Changelogs for all projects\n  clear                   Clear changelogs for a (set of) project(s), e.g. to\n                          set up for a new version\n\n  See \'changelog-generator help <subcommand>\' for detailed help.\n")
     }
+    
+    func testCheck() throws {
+        // This is an example of a functional test case.
+        // Use XCTAssert and related functions to verify your tests produce the correct
+        // results.
+
+        // Some of the APIs that we use below are available in macOS 10.13 and above.
+        guard #available(macOS 10.13, *) else {
+            return
+        }
+        
+        let packageRootPath = URL(fileURLWithPath: #file).pathComponents
+            .prefix(while: { $0 != "Tests" }).joined(separator: "/").dropFirst()
+        let projectDir = packageRootPath.appending("/Tests/changelog-generatorTests/testProject/")
+        
+        let fooBinary = productsDirectory.appendingPathComponent("changelog-generator")
+
+        let process = Process()
+        process.executableURL = fooBinary
+        process.arguments = ["check","-l",projectDir,"--no-delete"]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        var  output = String(data: data, encoding: .utf8)
+        output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
+        XCTAssertEqual(output, "#### Checking out git project for some project ####\n")
+    }
 
     /// Returns path to the built products directory.
     var productsDirectory: URL {
@@ -43,5 +75,6 @@ final class changelog_generatorTests: XCTestCase {
 
     static var allTests = [
         ("testRun", testRun),
+        ("testCheck", testCheck),
     ]
 }
