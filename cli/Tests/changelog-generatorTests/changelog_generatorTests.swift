@@ -58,7 +58,7 @@ final class changelog_generatorTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         var  output = String(data: data, encoding: .utf8)
         output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
-        XCTAssertEqual(output, "#### Checking out git project for some project ####\n")
+        XCTAssertEqual(output, "#### Preparing project directory for some project ####\n")
     }
     
     func testGenerate() throws {
