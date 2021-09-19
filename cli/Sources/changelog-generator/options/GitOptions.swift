@@ -1,6 +1,6 @@
 import ArgumentParser
 
-struct GitServerOptions: ParsableArguments {
+struct GitPushOptions: ParsableArguments {
     
     @Flag(name: [.long], help: "Push")
     var push: Bool = false
@@ -10,6 +10,9 @@ struct GitServerOptions: ParsableArguments {
     
     @Option(name: [.customShort("t"), .long], help: "Personal access token (needed for merge request operations)")
     var accessToken: String?
+    
+    @Flag(name: [.long], help: "Dry run")
+    var dryRun: Bool = false
     
     mutating func validate() throws {
         if(createMR) {
@@ -27,6 +30,9 @@ struct GitServerOptions: ParsableArguments {
 }
 
 struct GitProjectOptions: ParsableArguments {
+    @Option(name: [.customShort("p"), .long], help: "Path to projects file")
+    var projectsConfig: String?
+    
     @Option(name: [.customShort("g"), .long], help: "Git Url")
     var gitUrl: String?
     
@@ -38,4 +44,13 @@ struct GitProjectOptions: ParsableArguments {
     
     @Flag(name: [.long], help: "Don't delete git project when finished")
     var noDelete: Bool = false
+    
+    @Flag(name: [.long], help: "Don't pull")
+    var noPull: Bool = false
+    
+    func validate() throws {
+        guard (!(projectsConfig == nil && gitUrl == nil && localPath == nil)) else {
+            throw ValidationError("Please specify either a Git Url, a local path or a projects file")
+        }
+    }
 }

@@ -9,24 +9,26 @@ class GitUtil {
     private var task: Process?
     
     
-    func prepareGit(project: Project, baseBranch: String, branchName: String?) throws -> URL {
-        print("Checking out git project for \(project.title)")
+    func prepareGit(project: Project, noPull: Bool, baseBranch: String, branchName: String?) throws -> URL {
+        print("#### Preparing project directory for \(project.title) ####")
         
         var projectPath: URL
         if(project.localPath == nil) {
             projectPath = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
             try self.checkoutGitProject(atUrl: project.gitUrl!, atPath: projectPath.path)
         } else  {
-            projectPath = URL(fileURLWithPath: project.localPath!)
+            projectPath = URL(fileURLWithPath: project.localPath!, isDirectory: true)
         }
         
-        try self.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: baseBranch)
+        if(!noPull) {
+            try self.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: baseBranch)
+        }
         
-        if(branchName != nil) {
+        if(branchName != nil && branchName != "") {
             print("Creating branch \(branchName!)")
             
             
-            try self.createBranch(atPath: projectPath, branchName: branchName!)
+            try self.createBranch(atPath: projectPath, baseBranch: baseBranch, branchName: branchName!)
             try self.switchToBranch(atPath: projectPath, branchName: branchName!)
         }
         return projectPath
@@ -51,8 +53,8 @@ class GitUtil {
         
     }
     
-    func createBranch(atPath path: URL, branchName: String) throws {
-        try processInGitShell(atPath: path,["branch", branchName, "master"])
+    func createBranch(atPath path: URL, baseBranch: String, branchName: String) throws {
+        try processInGitShell(atPath: path,["branch", branchName, baseBranch])
     }
     
     func assertOnCorrectBranchAndUpToDate(atPath path: URL, branchName: String) throws {

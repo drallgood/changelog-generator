@@ -5,34 +5,12 @@ struct GenerateCommand: ParsableCommand {
     
     public static let configuration = CommandConfiguration(commandName: "generate", abstract: "Generate Changelogs for a project")
     
-    @OptionGroup var options: GenerateOptions
-    
     @OptionGroup var gitProjectOptions: GitProjectOptions
     
-    var title: String?
+    @OptionGroup var gitServerOptions: GitPushOptions
     
-    init() {
-    }
-    
-    // Used when calling from another command
-    init(options: GenerateOptions, title: String?, gitUrl: String?, localPath:String?) {
-        self.options = options
-        self.gitProjectOptions = setupGitProjectOptions(gitUrl: gitUrl, localPath: localPath)
-        self.gitProjectOptions.baseBranch = options.baseBranch
-        self.title = title
-    }
-    
-    private func setupGitProjectOptions(gitUrl: String?, localPath:String?) -> GitProjectOptions  {
-        var projectOptions:[String] = []
-        if(gitUrl != nil) {
-            projectOptions.append(contentsOf: ["-g",gitUrl!])
-        }
-        if(localPath != nil) {
-            projectOptions.append(contentsOf: ["-l",localPath!])
-        }
-        return GitProjectOptions.parseOrExit(projectOptions)
-    }
-    
+    @Argument(help: "The name of the release, e.g. 8.0.1")
+    var release: String
     
     mutating func validate() throws {
         guard (gitProjectOptions.gitUrl != nil || gitProjectOptions.localPath != nil) else {
@@ -41,14 +19,31 @@ struct GenerateCommand: ParsableCommand {
     }
     
     func run() throws {
-        let branchName = "CL-\(options.release)"
+        if(gitProjectOptions.projectsConfig != nil) {
+            print("Using projects from \(gitProjectOptions.projectsConfig!)")
+            
+            if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: gitProjectOptions.projectsConfig!) {
+                
+                let projectsConfig = ProjectsConfig.parseProjectsConfig(jsonData: localData)
+                projectsConfig.projects.forEach  { (project) in
+                    generateChangelogForProject(project: project)
+                }
+            }
+        } else {
+            let project = Project(title: "some project", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
+            generateChangelogForProject(project: project)
+        }
+    }
+    
+    func generateChangelogForProject(project: Project) {
+        let branchName = "CL-\(release)"
         let fileManager = FileManager.default
         let gitUtil = GitUtil()
         
         var projectPath: URL?
         
         var connector:Connector?
-        if(options.gitServerOptions.createMR) {
+        if(gitServerOptions.createMR) {
             connector = ConnectorUtil.getConnector()
         }
         
@@ -67,21 +62,20 @@ struct GenerateCommand: ParsableCommand {
         }
         sigintSrc.resume()
         
-        let project = Project(title: self.title ?? "project", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
         do {
-            projectPath = try gitUtil.prepareGit(project: project, baseBranch:gitProjectOptions.baseBranch, branchName: branchName)
+            projectPath = try gitUtil.prepareGit(project: project, noPull: gitProjectOptions.noPull, baseBranch:gitProjectOptions.baseBranch, branchName: branchName)
             guard try generateChangelog(projectPath: projectPath!) else {
                 return
             }
             
-            try gitUtil.commitChanges(gitUtil: gitUtil, projectPath: projectPath!, branchName: branchName, message: "Updating changelog for \(options.release)", push: options.gitServerOptions.push, dryRun: options.dryRun)
+            try gitUtil.commitChanges(gitUtil: gitUtil, projectPath: projectPath!, branchName: branchName, message: "Updating changelog for \(release)", push: gitServerOptions.push, dryRun: gitServerOptions.dryRun)
             
-            if(options.gitServerOptions.createMR && !options.dryRun) {
+            if(gitServerOptions.createMR && !gitServerOptions.dryRun) {
                 guard let projectName = gitUtil.extractProjectName(project.gitUrl!) else {
                     print("ERROR: couldn't extract project name from \(project.gitUrl!)")
                     return
                 }
-                try connector?.createMR(forProject: projectName, title: "Merge changelog for \(options.release) to \(gitProjectOptions.baseBranch)", body: "Generated changelog for \(options.release). Branch \(branchName) to \(gitProjectOptions.baseBranch)",token: options.gitServerOptions.accessToken!, sourceBranchName: branchName, targetBranchName: gitProjectOptions.baseBranch)
+                try connector?.createMR(forProject: projectName, title: "Merge changelog for \(release) to \(gitProjectOptions.baseBranch)", body: "Generated changelog for \(release). Branch \(branchName) to \(gitProjectOptions.baseBranch)",token: gitServerOptions.accessToken!, sourceBranchName: branchName, targetBranchName: gitProjectOptions.baseBranch)
             }
             
             if(!gitProjectOptions.noDelete) {
@@ -104,14 +98,14 @@ struct GenerateCommand: ParsableCommand {
         
         let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
         print("Generating markdown")
-        let markdownString = ChangelogUtil.generateMarkdown(changelogs: sortedLogs, release: options.release)
+        let markdownString = ChangelogUtil.generateMarkdown(changelogs: sortedLogs, release: release)
         if(ChangelogGenerator.debugEnabled) {
             print(markdownString)
         }
         print("Updating CHANGELOG.md")
         ChangelogUtil.appendToChangelogFile(filePath: projectPath.appendingPathComponent("CHANGELOG.md"), content: markdownString)
-        print("Archiving changelogs for \(options.release)")
-        try ChangelogUtil.archiveChangelogs(fromPath: changelogsPath, release: options.release)
+        print("Archiving changelogs for \(release)")
+        try ChangelogUtil.archiveChangelogs(fromPath: changelogsPath, release: release)
         return true
     }
 }

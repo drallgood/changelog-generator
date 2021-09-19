@@ -5,7 +5,7 @@ struct CheckChangelogCommand: ParsableCommand {
     
     public static let configuration = CommandConfiguration(commandName: "check", abstract: "Check changelogs for a (set of) project(s)")
     
-    @OptionGroup var options: ProjectOptions
+    @OptionGroup var options: GitProjectOptions
     
     func run() throws {
         if(options.projectsConfig != nil) {
@@ -19,7 +19,7 @@ struct CheckChangelogCommand: ParsableCommand {
                 }
             }
         } else {
-            let project = Project(title: "some project", gitUrl: options.gitProjectOptions.gitUrl, localPath: options.gitProjectOptions.localPath)
+            let project = Project(title: "some project", gitUrl: options.gitUrl, localPath: options.localPath)
             checkChangelogForProject(project: project)
         }
     }
@@ -34,7 +34,7 @@ struct CheckChangelogCommand: ParsableCommand {
         let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         sigintSrc.setEventHandler {
             gitUtil.terminate()
-            if(projectPath != nil && !options.gitProjectOptions.noDelete) {
+            if(projectPath != nil && !options.noDelete) {
                 do {
                     try fileManager.removeItem(at: projectPath!)
                 } catch {
@@ -47,32 +47,17 @@ struct CheckChangelogCommand: ParsableCommand {
 
         
         do {
-            projectPath = try prepareGit(gitUtil: gitUtil, project: project)
+            projectPath = try gitUtil.prepareGit(project: project, noPull: options.noPull, baseBranch: options.baseBranch, branchName: nil)
             guard try checkChangelogAtURL(projectPath: projectPath!) else {
                 return
             }
         
-            if(!options.gitProjectOptions.noDelete) {
+            if(!options.noDelete) {
                 try fileManager.removeItem(at: projectPath!)
             }
         } catch {
             print("Error when checking \(project.title): \(error.localizedDescription)")
         }
-    }
-    
-    private func prepareGit(gitUtil: GitUtil, project: Project) throws -> URL {
-        print("#### Checking out git project for \(project.title) ####")
-        
-        var projectPath: URL
-        if(project.localPath == nil) {
-            projectPath = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try gitUtil.checkoutGitProject(atUrl: project.gitUrl!, atPath: projectPath.path)
-        } else  {
-            projectPath = URL(fileURLWithPath: project.localPath!, isDirectory: true)
-        }
-        
-        try gitUtil.assertOnCorrectBranchAndUpToDate(atPath: projectPath, branchName: options.gitProjectOptions.baseBranch)
-        return projectPath
     }
     
     private func checkChangelogAtURL(projectPath: URL) throws -> Bool  {

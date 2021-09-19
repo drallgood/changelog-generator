@@ -5,19 +5,19 @@ struct ClearChangelogCommand: ParsableCommand {
     
     public static let configuration = CommandConfiguration(commandName: "clear", abstract: "Clear changelogs for a (set of) project(s), e.g. to set up for a new version")
     
-    @OptionGroup var options: ProjectOptions
+    @OptionGroup var gitProjectOptions: GitProjectOptions
     
-    @OptionGroup var gitServerOptions: GitServerOptions
+    @OptionGroup var gitServerOptions: GitPushOptions
     
     @Option(name: [.customShort("f"), .long], help: "Path to CHANGELOG.md template file", completion: .file(extensions: ["json"]))
     var templateFile: String?
     
     
     func run() throws {
-        if(options.projectsConfig != nil) {
-            print("Using projects from \(options.projectsConfig!)")
+        if(gitProjectOptions.projectsConfig != nil) {
+            print("Using projects from \(gitProjectOptions.projectsConfig!)")
             
-            if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: options.projectsConfig!) {
+            if let localData = try ProjectsConfig.readProjectsConfigFile(fromPath: gitProjectOptions.projectsConfig!) {
                 
                 let projectsConfig = ProjectsConfig.parseProjectsConfig(jsonData: localData)
                 projectsConfig.projects.forEach  { (project) in
@@ -25,7 +25,7 @@ struct ClearChangelogCommand: ParsableCommand {
                 }
             }
         } else {
-            let project = Project(title: "some project", gitUrl: options.gitProjectOptions.gitUrl, localPath: options.gitProjectOptions.localPath)
+            let project = Project(title: "some project", gitUrl: gitProjectOptions.gitUrl, localPath: gitProjectOptions.localPath)
             clearChangelogForProject(project: project)
         }
     }
@@ -41,7 +41,7 @@ struct ClearChangelogCommand: ParsableCommand {
         let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
         sigintSrc.setEventHandler {
             gitUtil.terminate()
-            if(projectPath != nil && !options.gitProjectOptions.noDelete) {
+            if(projectPath != nil && !gitProjectOptions.noDelete) {
                 do {
                     try fileManager.removeItem(at: projectPath!)
                 } catch {
@@ -55,7 +55,7 @@ struct ClearChangelogCommand: ParsableCommand {
         
         do {
             let branchName = "cl_clear_\(Int.random(in: 1...1000))"
-            projectPath = try gitUtil.prepareGit(project: project,baseBranch: options.gitProjectOptions.baseBranch, branchName: branchName)
+            projectPath = try gitUtil.prepareGit(project: project, noPull: gitProjectOptions.noPull, baseBranch: gitProjectOptions.baseBranch, branchName: branchName)
             
             try clearChangelog(projectPath: projectPath!)
             
@@ -66,10 +66,10 @@ struct ClearChangelogCommand: ParsableCommand {
                     print("ERROR: couldn't extract project name from \(project.gitUrl!)")
                     return
                 }
-                try ConnectorUtil.getConnector().createMR(forProject: projectName, title: "Clearing changelog on \(options.gitProjectOptions.baseBranch)", body: "Clearing changelog on \(options.gitProjectOptions.baseBranch) to prepare for next version",token: gitServerOptions.accessToken!, sourceBranchName: branchName, targetBranchName: options.gitProjectOptions.baseBranch)
+                try ConnectorUtil.getConnector().createMR(forProject: projectName, title: "Clearing changelog on \(gitProjectOptions.baseBranch)", body: "Clearing changelog on \(gitProjectOptions.baseBranch) to prepare for next version",token: gitServerOptions.accessToken!, sourceBranchName: branchName, targetBranchName: gitProjectOptions.baseBranch)
             }
             
-            if(!options.gitProjectOptions.noDelete) {
+            if(!gitProjectOptions.noDelete) {
                 try fileManager.removeItem(at: projectPath!)
             }
         } catch {
