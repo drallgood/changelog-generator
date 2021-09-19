@@ -78,6 +78,8 @@ final class changelog_generatorTests: XCTestCase {
         try FileManager.default.copyItem(at:URL(fileURLWithPath: projectDir,isDirectory: true), to: tempDir)
         
         _ = try gitShell(atPath: tempDir, ["init","-b","main"]).waitUntilExit()
+        _ = try gitShell(atPath: tempDir, ["config","user.name","'Your Name'"]).waitUntilExit()
+        _ = try gitShell(atPath: tempDir, ["config","user.email","'you@example.com'"]).waitUntilExit()
         _ = try gitShell(atPath: tempDir, ["add","."]).waitUntilExit()
         _ = try gitShell(atPath: tempDir, ["commit","-m","'Initial commit'"]).waitUntilExit()
         let fooBinary = productsDirectory.appendingPathComponent("changelog-generator")
