@@ -15,7 +15,7 @@ enum ChangelogType: String, Codable, CaseIterable, ExpressibleByArgument {
 extension ChangelogType {
     
     init?(argument: String) {
-        switch argument {
+        switch argument.lowercased() {
         case "security":
             self = .security
         case "removed":
@@ -35,15 +35,23 @@ extension ChangelogType {
         // Some common mistakes
         case "remove":
             self = .removed
+        case "removes":
+            self = .removed
         case "fix":
             self = .fixed
         case "fixing":
             self = .fixed
+        case "fixes":
+            self = .fixed
         case "add":
+            self = .added
+        case "adds":
             self = .added
         case "adding":
             self = .added
         case "change":
+            self = .changed
+        case "changes":
             self = .changed
         default:
             return nil
