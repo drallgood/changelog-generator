@@ -28,6 +28,12 @@ jobs:
       run: swift build -c release
     - name: Run tests
       run: swift test -c release
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v3
+      with:
+          name: generator-binary
+          path: .build/release/changelog-generator
+          retention-days: 1
 
   publish:
     needs: build
@@ -42,6 +48,10 @@ jobs:
       with:
         path:  "**/.build"
         key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: generator-binary
     - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
