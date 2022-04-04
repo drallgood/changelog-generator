@@ -32,7 +32,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
           name: generator-binary
-          path: .build/release/changelog-generator
+          path: cli/.build/release/changelog-generator
           retention-days: 1
 
   publish:
