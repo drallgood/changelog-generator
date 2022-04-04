@@ -13,8 +13,8 @@ struct GenerateCommand: ParsableCommand {
     var release: String
     
     mutating func validate() throws {
-        guard (gitProjectOptions.gitUrl != nil || gitProjectOptions.localPath != nil) else {
-            throw ValidationError("Please specify either a Git Url or a local path")
+        guard (gitProjectOptions.projectsConfig != nil || gitProjectOptions.gitUrl != nil || gitProjectOptions.localPath != nil) else {
+            throw ValidationError("Please specify either a projects file, a Git Url or a local path")
         }
     }
     
