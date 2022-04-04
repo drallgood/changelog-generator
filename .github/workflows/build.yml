@@ -26,14 +26,17 @@ jobs:
     - uses: fwal/setup-swift@v1
     - name: Build
       run: swift build -c release
-    - name: Run tests
-      run: swift test -c release
     - name: Archive production artifacts
       uses: actions/upload-artifact@v3
       with:
           name: generator-binary
-          path: cli/.build/release/changelog-generator
+          path: .build/release/changelog-generator
           retention-days: 1
+    - name: LS
+      run: ls -alR .
+    - name: Run tests
+      run: swift test -c release
+    
 
   publish:
     needs: build
