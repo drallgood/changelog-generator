@@ -120,6 +120,9 @@ class ChangelogUtil {
     
     static func deleteArchive(fromPath path: URL) throws {
         let archiveDir = path.appendingPathComponent("archive")
+        if !FileManager.default.fileExists(atPath: archiveDir.path) {
+            return
+        }
         let directoryContents = try FileManager.default.contentsOfDirectory(at: archiveDir, includingPropertiesForKeys: nil)
         try directoryContents.forEach { (file) in
             if(ChangelogGenerator.debugEnabled) {
