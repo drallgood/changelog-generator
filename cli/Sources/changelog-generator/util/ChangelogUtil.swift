@@ -87,8 +87,8 @@ class ChangelogUtil {
         }
     }
     
-    static func archiveChangelogs(fromPath path: URL, release: String) throws {
-        let archiveDir = path.appendingPathComponent("archive").appendingPathComponent(release)
+    static func archiveChangelogs(fromList changelogs: [ChangelogWrapper], release: String, basePath: URL) throws {
+        let archiveDir = basePath.appendingPathComponent("archive").appendingPathComponent(release)
         if !FileManager.default.fileExists(atPath: archiveDir.path) {
             do {
                 try FileManager.default.createDirectory(atPath: archiveDir.path, withIntermediateDirectories: true, attributes: nil)
@@ -97,7 +97,6 @@ class ChangelogUtil {
             }
         }
         
-        let changelogs = ChangelogUtil.readChangelogs(fromPath: path)
         try changelogs.forEach { (wrapper) in
             let fileUrl = wrapper.file
             let newUrl = archiveDir.appendingPathComponent(fileUrl.lastPathComponent)

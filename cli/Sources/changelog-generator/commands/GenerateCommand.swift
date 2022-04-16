@@ -105,7 +105,7 @@ struct GenerateCommand: ParsableCommand {
         print("Updating CHANGELOG.md")
         ChangelogUtil.appendToChangelogFile(filePath: projectPath.appendingPathComponent("CHANGELOG.md"), content: markdownString)
         print("Archiving changelogs for \(release)")
-        try ChangelogUtil.archiveChangelogs(fromPath: changelogsPath, release: release)
+        try ChangelogUtil.archiveChangelogs(fromList: changelogsList, release: release, basePath: changelogsPath)
         return true
     }
 }
