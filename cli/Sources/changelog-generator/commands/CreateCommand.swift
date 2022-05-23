@@ -18,7 +18,7 @@ struct CreateCommand: ParsableCommand {
     var title: String
     
     @Option(name: [.customShort("w"), .long], help: "Type of change. One of: \(ChangelogType.allCasesAsString())")
-    var type: ChangelogType = .added
+    var type: String = "added"
     
     func validate() throws {
         guard (fileName != nil || reference != nil) else {

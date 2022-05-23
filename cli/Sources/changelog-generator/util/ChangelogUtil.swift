@@ -36,32 +36,27 @@ class ChangelogUtil {
         return changelogs
     }
     
-    static func sortByType(changelogsList:[ChangelogWrapper]) -> Dictionary<ChangelogType, [Changelog]> {
+    static func sortByType(changelogsList:[ChangelogWrapper]) -> Dictionary<String, [Changelog]> {
         let changelogs = changelogsList.map { (wrapper) -> [Changelog] in
             return wrapper.changelogs
         }.flatMap { $0 }
         return Dictionary(grouping: changelogs, by: { $0.type })
     }
     
-    static func generateMarkdown(changelogs: Dictionary<ChangelogType, [Changelog]>, release:String) -> String {
+    static func generateMarkdown(changelogs: Dictionary<String, [Changelog]>, release:String) -> String {
         
         let baseUrl = ChangelogGenerator.config.ticketBaseUrl
         
         var result = "## \(release)\n"
-        ChangelogType.allCases.forEach { (type) in
-            let logs = changelogs[type]
-            if (logs == nil || logs!.count <= 0) {
-                return
-            }
-            
+        changelogs.forEach { (key, logs) in
             // Prepare the group header.
             // Example:
             // ### Added (54 changes)
             
-            result += "### \(type.rawValue.capitalized) (\(logs!.count) changes)\n\n"
+            result += "### \(key.capitalized) (\(logs.count) changes)\n\n"
             
             // Add entries to the group.
-            logs?.forEach({ (log) in
+            logs.forEach({ (log) in
                 result += "- \(log.title)"
                 if(!log.reference.isEmpty) {
                     result += " ([\(log.reference)](\(baseUrl ?? "")\(log.reference)))"
