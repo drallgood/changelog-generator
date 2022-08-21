@@ -58,7 +58,7 @@ final class changelog_generatorTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         var  output = String(data: data, encoding: .utf8)
         output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
-        XCTAssertEqual(output, "#### Preparing project directory for some project ####\n")
+        XCTAssertEqual(output, "#### Preparing project directory for some project ####\nFound changelogs dir at /changelogs\nFound 1 valid changelogs.\n")
     }
     
     func testGenerate() throws {
@@ -96,7 +96,7 @@ final class changelog_generatorTests: XCTestCase {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         var  output = String(data: data, encoding: .utf8)
         output = output?.replacingOccurrences(of: "Using .*\n", with: "", options: [.caseInsensitive, .regularExpression])
-        XCTAssertEqual(output, "#### Preparing project directory for some project ####\nCreating branch CL-testVersion\nGenerating markdown\nUpdating CHANGELOG.md\nArchiving changelogs for testVersion\n")
+        XCTAssertEqual(output, "#### Preparing project directory for some project ####\nCreating branch CL-testVersion\nFound changelogs dir at /changelogs\nGenerating markdown\nUpdating CHANGELOG.md\nArchiving changelogs for testVersion\n")
     }
 
     /// Returns path to the built products directory.
