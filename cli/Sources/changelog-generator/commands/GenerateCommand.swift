@@ -89,23 +89,35 @@ struct GenerateCommand: ParsableCommand {
     
     
     private func generateChangelog(projectPath: URL) throws -> Bool  {
-        let changelogsPath = projectPath.appendingPathComponent("changelogs")
-        let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogsPath)
-        if (changelogsList.count <= 0) {
-            print("No changelogs found.")
-            return false
+        let changelogDirs = ChangelogUtil.getChangeLogDirs(atPath: projectPath)
+        var result = true
+        try changelogDirs.forEach { changelogDir in
+            print("Found changelogs dir at \(changelogDir.path.replacingOccurrences(of: projectPath.path, with: ""))")
+            let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogDir)
+            if (changelogsList.count <= 0) {
+                print("No changelogs found.")
+                result = false
+                return
+            }
+            
+            let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
+            
+            try sortedLogs.keys.forEach { key in
+                if !ChangelogGenerator.config.validTicketStates.contains(where:{$0.localizedStandardContains(key)}) {
+                    throw ProcessError.InvalidState(state: key)
+                }
+            }
+            
+            print("Generating markdown")
+            let markdownString = ChangelogUtil.generateMarkdown(changelogs: sortedLogs, release: release)
+            if(ChangelogGenerator.debugEnabled) {
+                print(markdownString)
+            }
+            print("Updating CHANGELOG.md")
+            ChangelogUtil.appendToChangelogFile(filePath: changelogDir.appendingPathComponent("CHANGELOG.md"), content: markdownString)
+            print("Archiving changelogs for \(release)")
+            try ChangelogUtil.archiveChangelogs(fromList: changelogsList, release: release, basePath: changelogDir)
         }
-        
-        let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
-        print("Generating markdown")
-        let markdownString = ChangelogUtil.generateMarkdown(changelogs: sortedLogs, release: release)
-        if(ChangelogGenerator.debugEnabled) {
-            print(markdownString)
-        }
-        print("Updating CHANGELOG.md")
-        ChangelogUtil.appendToChangelogFile(filePath: projectPath.appendingPathComponent("CHANGELOG.md"), content: markdownString)
-        print("Archiving changelogs for \(release)")
-        try ChangelogUtil.archiveChangelogs(fromList: changelogsList, release: release, basePath: changelogsPath)
-        return true
+        return result
     }
 }

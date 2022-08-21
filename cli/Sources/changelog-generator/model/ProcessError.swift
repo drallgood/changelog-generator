@@ -9,6 +9,7 @@ import Foundation
 enum ProcessError: Error {
     case exited(code:Int32)
     case NoConfigFound(path: String)
+    case InvalidState(state: String)
     case URLError(url: String)
     
 }
@@ -20,6 +21,8 @@ extension ProcessError: LocalizedError {
             return "Process exited with code \(code)"
         case .NoConfigFound(path: let path):
             return "No Configuration found at \(path)"
+        case .InvalidState(state: let foundState):
+            return "Found invalid state \"\(foundState)\". Allowed: \(ChangelogGenerator.config.validTicketStates)"
         case .URLError(let url):
             return "Error parsing URL: \(url)"
         }

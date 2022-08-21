@@ -44,14 +44,14 @@ struct CheckChangelogCommand: ParsableCommand {
             GenerateCommand.exit(withError: ProcessError.exited(code: 0))
         }
         sigintSrc.resume()
-
+        
         
         do {
             projectPath = try gitUtil.prepareGit(project: project, noPull: options.noPull, baseBranch: options.baseBranch, branchName: nil)
             guard try checkChangelogAtURL(projectPath: projectPath!) else {
                 return
             }
-        
+            
             if(!options.noDelete) {
                 try fileManager.removeItem(at: projectPath!)
             }
@@ -61,12 +61,25 @@ struct CheckChangelogCommand: ParsableCommand {
     }
     
     private func checkChangelogAtURL(projectPath: URL) throws -> Bool  {
-        let changelogsPath = projectPath.appendingPathComponent("changelogs")
-        let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogsPath)
-        if (changelogsList.count <= 0) {
-            print("No changelogs found.")
-            return false
+        let changelogDirs = ChangelogUtil.getChangeLogDirs(atPath: projectPath)
+        var result = true
+        try changelogDirs.forEach { changelogDir in
+            print("Found changelogs dir at \(changelogDir.path.replacingOccurrences(of: projectPath.path, with: ""))")
+            let changelogsList = ChangelogUtil.readChangelogs(fromPath: changelogDir)
+            if (changelogsList.count <= 0) {
+                print("No changelogs found.")
+                result = false
+                return
+            }
+            
+            let sortedLogs = ChangelogUtil.sortByType(changelogsList: changelogsList)
+            try sortedLogs.keys.forEach { key in
+                if !ChangelogGenerator.config.validTicketStates.contains(where:{$0.localizedStandardContains(key)}) {
+                    throw ProcessError.InvalidState(state: key)
+                }
+            }
+            print("Found \(changelogsList.count) valid changelogs.")
         }
-        return true
+        return result
     }
 }

@@ -36,6 +36,24 @@ class ChangelogUtil {
         return changelogs
     }
     
+    static func getChangeLogDirs(atPath path: URL) -> [URL]{
+        var dirs = [URL]()
+        if let enumerator = FileManager.default.enumerator(at: path, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles, .skipsPackageDescendants]) {
+            for case let fileURL as URL in enumerator {
+                do {
+                    let fileAttributes = try fileURL.resourceValues(forKeys:[.isDirectoryKey])
+                    if fileAttributes.isDirectory! && fileURL.path.contains("changelogs") {
+                        dirs.append(fileURL)
+                    }
+                } catch {
+                    //print(error, fileURL)
+                }
+            }
+            return dirs
+        }
+        return []
+    }
+    
     static func sortByType(changelogsList:[ChangelogWrapper]) -> Dictionary<String, [Changelog]> {
         let changelogs = changelogsList.map { (wrapper) -> [Changelog] in
             return wrapper.changelogs
